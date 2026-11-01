@@ -1,0 +1,6 @@
+python --version
+pip install numpy, pandas etc etc
+
+create virtual env
+python -m venv venv
+.\venv\Scripts\Activate.ps1
