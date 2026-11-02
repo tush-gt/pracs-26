@@ -1,0 +1,76 @@
+
+class DGIM:
+    def __init__(self, window_size):
+        self.window = window_size
+        self.time = 0
+        self.buckets = []
+
+    def add(self, bit):
+        self.time += 1
+
+        # Remove expired buckets
+        self.buckets = [
+            b for b in self.buckets
+            if b[1] > self.time - self.window
+        ]
+
+        if bit == 1:
+            # Add a new bucket
+            self.buckets.insert(0, [1, self.time])
+
+            # Merge buckets when more than 2 have same size
+            i = 0
+            while i < len(self.buckets):
+                size = self.buckets[i][0]
+                same = [
+                    j for j, b in enumerate(self.buckets)
+                    if b[0] == size
+                ]
+
+                if len(same) > 2:
+                    # Merge two oldest buckets
+                    j1, j2 = same[-2], same[-1]
+                    new_bucket = [
+                        size * 2,
+                        self.buckets[j1][1]
+                    ]
+
+                    self.buckets.pop(j2)
+                    self.buckets.pop(j1)
+                    self.buckets.insert(j1, new_bucket)
+                    i = 0
+                else:
+                    i += 1
+
+    def query(self, n):
+        total = 0
+        oldest = True
+        cutoff = self.time - n
+
+        for size, timestamp in self.buckets:
+            if timestamp <= cutoff:
+                continue
+
+            if oldest:
+                total += size / 2
+                oldest = False
+            else:
+                total += size
+
+        return int(total)
+
+
+# Main program
+d = DGIM(100)
+
+stream = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0]
+
+for bit in stream:
+    d.add(bit)
+
+print("Input Stream:", stream)
+print("Buckets:", d.buckets)
+print("Estimated number of 1s in last 5 bits:",
+      d.query(5))
+print("Estimated number of 1s in last 10 bits:",
+      d.query(10))

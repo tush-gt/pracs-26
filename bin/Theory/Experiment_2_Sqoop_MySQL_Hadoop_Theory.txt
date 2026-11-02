@@ -1,0 +1,114 @@
+BDA PRACTICAL – EXPERIMENT 2
+DATA TRANSFER BETWEEN MYSQL AND HADOOP USING APACHE SQOOP
+THEORY NOTES
+
+1. AIM
+To understand Apache Sqoop and transfer bulk data between a relational database such as MySQL and the Hadoop ecosystem.
+
+2. WHAT IS A RELATIONAL DATABASE?
+A relational database stores data in tables. A table consists of rows and columns. Relationships can be represented using keys. MySQL is a relational database management system (RDBMS) that uses SQL to create, retrieve, update, and delete data.
+
+3. WHAT IS APACHE SQOOP?
+Apache Sqoop is a tool developed to transfer bulk data between relational databases and Hadoop storage or processing systems. The name Sqoop comes from SQL-to-Hadoop.
+Sqoop is useful when an organization has data in a traditional relational database and wants to bring it into Hadoop for large-scale analysis, or when processed results need to be sent back to a relational database.
+Sqoop is a legacy technology and is not included in every modern Hadoop distribution. The installed Sqoop, Hadoop, Java, database, and JDBC-driver versions must be compatible.
+
+4. WHY SQOOP IS USED
+• Transfers large volumes of structured data.
+• Moves data from relational databases into HDFS or Hive.
+• Can transfer processed data from Hadoop back into a database.
+• Supports selecting tables, columns, and rows.
+• Can use parallel map tasks for bulk transfer.
+• Reduces the need to write a custom transfer program for common database imports and exports.
+
+5. SQOOP ARCHITECTURE / WORKING
+A typical Sqoop import works as follows:
+1. The user runs a Sqoop command with a JDBC connection and table/query details.
+2. Sqoop connects to the relational database using a JDBC driver.
+3. Sqoop obtains table metadata and determines how to split the data.
+4. Sqoop creates one or more map tasks.
+5. Map tasks read portions of the table from the database.
+6. The records are written to the chosen Hadoop destination, such as HDFS.
+For export, Sqoop reads records from HDFS and uses JDBC to insert them into the destination database table.
+
+6. IMPORT AND EXPORT
+IMPORT: Database -> Hadoop.
+Import transfers rows from a relational database table or query into HDFS, Hive, or another supported Hadoop destination.
+EXPORT: Hadoop -> Database.
+Export reads data from a Hadoop location and inserts it into a relational database table.
+Remember the direction:
+• Import: MySQL to HDFS.
+• Export: HDFS to MySQL.
+
+7. IMPORTANT SQOOP IMPORT OPTIONS
+• --connect: JDBC connection string identifying the database.
+• --username: database login name.
+• -P: asks for the password interactively.
+• --password: supplies a password on the command line; this can expose credentials in shell history or process listings, so interactive prompting or secure configuration is preferable.
+• --table: table to import.
+• --target-dir: HDFS destination directory.
+• --columns: comma-separated list of selected columns.
+• --where: SQL condition used to filter rows.
+• --query: custom SQL query; Sqoop query imports normally require the $CONDITIONS placeholder.
+• --m or --num-mappers: number of mapper tasks used for parallelism.
+• --split-by: column used to divide records among mappers for a query import.
+• --compress: enables compression of output.
+A mapper count of 1 is convenient for small practical demonstrations and avoids partitioning complexity.
+
+8. JDBC
+JDBC stands for Java Database Connectivity. It is a Java API that allows Java programs and tools such as Sqoop to communicate with relational databases. The correct database-specific JDBC driver must be available to Sqoop.
+
+9. IMPORT DATA FORMAT
+Sqoop commonly writes imported records as delimited text files in HDFS unless a different supported output format is selected. The delimiter matters during export. For example, if an HDFS file is tab-delimited but export is configured to read commas, fields may be interpreted incorrectly.
+The destination table's column order, data types, null handling, and delimiter must be compatible with the exported data.
+
+10. PARALLELISM
+Sqoop can use multiple mapper tasks to read different portions of a table. This can improve transfer speed for large tables, but the split column must be suitable and the database must be able to handle parallel reads.
+A single mapper is often selected in introductory practicals. It is simpler but does not demonstrate parallel transfer.
+
+11. COMMON REQUIREMENTS
+• MySQL server should be running.
+• The database and source/destination tables should exist.
+• Correct username and password are needed.
+• JDBC driver must be available.
+• Hadoop configuration and HDFS should be working for HDFS transfers.
+• Sqoop must be installed and compatible with the environment.
+• HDFS destination directory should not already exist for a normal import unless overwrite/append behavior is intentionally configured.
+
+12. ADVANTAGES
+• Convenient bulk data transfer.
+• Supports table and query-based imports.
+• Can use parallel mappers.
+• Supports both import and export.
+• Connects traditional relational databases with Hadoop tools.
+
+13. LIMITATIONS
+• Primarily designed for relational/bulk transfer, not continuous event streaming.
+• Depends on JDBC drivers and compatibility.
+• Parallel imports require an appropriate split column and can add load to the database.
+• Legacy Sqoop versions may be difficult to run with newer Java/Hadoop environments.
+• It is not a replacement for stream-ingestion systems such as Kafka or Flume.
+
+14. SQOOP VS FLUME
+Sqoop is commonly used for bulk transfer between relational databases and Hadoop. Flume is designed for collecting and moving event/log data, often continuously, into storage systems.
+
+15. APPLICATIONS
+Migrating customer, sales, inventory, banking, and transactional data from RDBMS platforms into HDFS for historical analysis; exporting summarized analytical results back to database tables.
+
+16. IMPORTANT VIVA QUESTIONS
+Q: What is Sqoop?
+A: A tool for bulk data transfer between relational databases and Hadoop.
+Q: What is import?
+A: Moving data from a database into Hadoop.
+Q: What is export?
+A: Moving data from Hadoop into a database.
+Q: What is JDBC?
+A: Java Database Connectivity, an API for connecting Java applications to databases.
+Q: Why is a JDBC driver needed?
+A: It enables the Java-based tool to communicate with the particular database.
+Q: What does --m 1 mean?
+A: Use one mapper for the transfer.
+Q: What is --where used for?
+A: To filter imported rows using a condition.
+Q: What is the difference between Sqoop and Flume?
+A: Sqoop handles bulk relational database transfers; Flume is commonly used for log/event ingestion.

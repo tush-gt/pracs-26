@@ -1,0 +1,207 @@
+EXPERIMENT 2 — SQOOP AND MYSQL: TRANSFER BETWEEN MYSQL AND HDFS
+===============================================================
+
+Aim
+---
+Use Sqoop to import data from MySQL into HDFS and export data from HDFS to MySQL.
+
+VERY IMPORTANT COMPATIBILITY NOTE
+---------------------------------
+Sqoop 1.4.7 is an old/retired tool. Many modern Linux images do not package it, and it may not work with every Hadoop 3 / Java 11+ combination. Your college lab may already have a tested combination. First check versions. If `sqoop version` works, use the existing lab installation. Do not upgrade Hadoop/Java just before the practical.
+
+A. CHECK VERSIONS FIRST
+-----------------------
+    java -version
+    hadoop version
+    hdfs version
+    sqoop version
+    mysql --version
+    mysqladmin --version
+
+If MySQL client is present but server is not running:
+    sudo systemctl status mysql
+    sudo systemctl start mysql
+
+B. INSTALL MYSQL ONLY IF MISSING (UBUNTU/DEBIAN)
+-----------------------------------------------
+    sudo apt update
+    sudo apt install -y mysql-server mysql-client
+    sudo systemctl enable --now mysql
+    mysql --version
+    sudo systemctl status mysql
+
+Login:
+    sudo mysql
+
+C. INSTALL SQOOP ONLY IF YOUR LAB DOES NOT ALREADY PROVIDE IT
+-------------------------------------------------------------
+Use only the Sqoop/Hadoop/Java combination approved by your lab. The legacy Sqoop binary and MySQL JDBC connector must be available. A typical legacy archive install is:
+
+    cd /tmp
+    wget https://archive.apache.org/dist/sqoop/1.4.7/sqoop-1.4.7.bin__hadoop-2.6.0.tar.gz
+    tar -xzf sqoop-1.4.7.bin__hadoop-2.6.0.tar.gz
+    sudo mv sqoop-1.4.7.bin__hadoop-2.6.0 /opt/sqoop
+
+This archive is built against Hadoop 2.6-era libraries; it is NOT a guarantee of compatibility with Hadoop 3. Check with the college lab setup before using it.
+Add environment variables (adjust if your lab uses another path):
+
+    echo 'export SQOOP_HOME=/opt/sqoop' >> ~/.bashrc
+    echo 'export PATH=$PATH:$SQOOP_HOME/bin' >> ~/.bashrc
+    source ~/.bashrc
+
+The MySQL Connector/J JAR must be in `$SQOOP_HOME/lib`. If the lab has a connector JAR, copy that exact file:
+    ls "$SQOOP_HOME/lib"
+    find /usr/share/java -iname '*mysql*connector*.jar' 2>/dev/null
+
+If a connector is found, copy it (replace the path with the actual result):
+    cp /path/to/mysql-connector-j.jar "$SQOOP_HOME/lib/"
+
+Check:
+    sqoop version
+
+If the lab has no connector, no network, or incompatible versions, do not improvise during the exam. Ask the lab instructor which preconfigured Sqoop installation to use.
+
+D. CREATE DATABASE AND TABLE
+----------------------------
+Open MySQL:
+    sudo mysql
+
+At the mysql> prompt, run the following SQL (do not include the `mysql>` prompt):
+
+    CREATE DATABASE IF NOT EXISTS college;
+    USE college;
+    DROP TABLE IF EXISTS Faculty;
+    CREATE TABLE Faculty (
+      FacultyID INT PRIMARY KEY,
+      Name VARCHAR(50),
+      Department VARCHAR(50),
+      Salary INT
+    );
+    INSERT INTO Faculty VALUES
+    (1,'Asha','Computer',50000),
+    (2,'Ravi','IT',55000),
+    (3,'Neha','Computer',60000),
+    (4,'Kiran','Electronics',52000),
+    (5,'Meera','IT',58000);
+    SELECT * FROM Faculty;
+
+Exit:
+    EXIT;
+
+E. TEST MYSQL CONNECTION
+------------------------
+    mysql -u root -p -e "SELECT * FROM college.Faculty;"
+
+Enter the MySQL password when prompted. If root uses socket authentication, use:
+    sudo mysql -e "SELECT * FROM college.Faculty;"
+
+For Sqoop, use a MySQL account/password that can connect over TCP. Create a dedicated lab account if permitted:
+    sudo mysql
+
+SQL:
+    CREATE USER IF NOT EXISTS 'sqoopuser'@'localhost' IDENTIFIED BY 'SqoopPass123!';
+    GRANT ALL PRIVILEGES ON college.* TO 'sqoopuser'@'localhost';
+    FLUSH PRIVILEGES;
+    EXIT;
+
+F. SQOOP LIST DATABASES / TABLES
+--------------------------------
+    sqoop list-databases --connect jdbc:mysql://localhost:3306/ --username sqoopuser -P
+    sqoop list-tables --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P
+
+Type password when asked: SqoopPass123!
+
+G. IMPORT FULL TABLE INTO HDFS
+------------------------------
+    hdfs dfs -mkdir -p /user/$(whoami)/sqoop
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --target-dir /user/$(whoami)/sqoop/faculty_full --num-mappers 1
+
+View:
+    hdfs dfs -ls /user/$(whoami)/sqoop/faculty_full
+    hdfs dfs -cat /user/$(whoami)/sqoop/faculty_full/part-m-*
+
+H. IMPORT TO A SPECIFIC TARGET DIRECTORY
+----------------------------------------
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --target-dir /user/$(whoami)/sqoop/faculty_target --num-mappers 1
+
+I. IMPORT ONLY A SUBSET OF ROWS
+-------------------------------
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --where "Department='Computer'" --target-dir /user/$(whoami)/sqoop/faculty_computer --num-mappers 1
+
+J. IMPORT SELECTED COLUMNS
+--------------------------
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --columns FacultyID,Name,Salary --target-dir /user/$(whoami)/sqoop/faculty_selected --num-mappers 1
+
+K. IMPORT USING A QUERY
+-----------------------
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --query "SELECT FacultyID,Name,Department FROM Faculty WHERE \$CONDITIONS" --split-by FacultyID --target-dir /user/$(whoami)/sqoop/faculty_query --num-mappers 1
+
+L. PASSWORD FILE METHOD (DO NOT PUT PASSWORD DIRECTLY IN COMMAND)
+-----------------------------------------------------------------
+Create a permission-restricted password file:
+
+    printf '%s' 'SqoopPass123!' > ~/sqoop_password.txt
+    chmod 600 ~/sqoop_password.txt
+
+Use:
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser --password-file file:///home/REPLACE_WITH_USERNAME/sqoop_password.txt --table Faculty --target-dir /user/$(whoami)/sqoop/faculty_password_file --num-mappers 1
+
+Replace the home path with:
+    echo "$HOME"
+
+Alternative interactive method:
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --target-dir /user/$(whoami)/sqoop/faculty_password_prompt --num-mappers 1
+
+M. COMPRESSED IMPORT
+--------------------
+    sqoop import --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty --target-dir /user/$(whoami)/sqoop/faculty_compressed --compress --compression-codec org.apache.hadoop.io.compress.GzipCodec --num-mappers 1
+
+N. EXPORT FROM HDFS TO MYSQL
+----------------------------
+Create a destination table first:
+
+    sudo mysql college
+
+At mysql>:
+    DROP TABLE IF EXISTS Faculty_Export;
+    CREATE TABLE Faculty_Export (
+      FacultyID INT,
+      Name VARCHAR(50),
+      Department VARCHAR(50),
+      Salary INT
+    );
+    EXIT;
+
+Create a tab-delimited local file and upload it to HDFS:
+
+    printf '101\tAnaya\tComputer\t65000\n102\tDev\tIT\t62000\n' > faculty_export.txt
+    hdfs dfs -mkdir -p /user/$(whoami)/sqoop/export_input
+    hdfs dfs -put -f faculty_export.txt /user/$(whoami)/sqoop/export_input/
+
+Export:
+    sqoop export --connect jdbc:mysql://localhost:3306/college --username sqoopuser -P --table Faculty_Export --export-dir /user/$(whoami)/sqoop/export_input --input-fields-terminated-by '\t' --num-mappers 1
+
+Verify:
+    sudo mysql -e "SELECT * FROM college.Faculty_Export;"
+
+O. IMPORTANT RE-RUN RULE
+------------------------
+Sqoop import normally fails if the HDFS target directory already exists. Remove only the experiment output directory before rerunning:
+
+    hdfs dfs -rm -r /user/$(whoami)/sqoop/faculty_full
+
+Do not remove your entire HDFS user directory.
+
+COMMON ERRORS
+-------------
+• Access denied: check username/password and GRANT privileges.
+• Communications link failure: MySQL service/port 3306 is not available; check `sudo systemctl status mysql`.
+• No suitable driver: MySQL Connector/J is missing from Sqoop's lib directory.
+• Sqoop command not found: SQOOP_HOME/PATH not configured.
+• Incompatible Hadoop/Java classes: use the college-tested version combination; don't randomly replace JARs.
+• Target directory exists: remove that one output directory before import.
+• Password-file permission error: use chmod 600 and an absolute `file:///home/...` path.
+
+VIVA
+----
+Sqoop transfers bulk data between relational databases and Hadoop. Import means RDBMS to Hadoop/HDFS. Export means HDFS to RDBMS. `--table` selects table, `--where` filters rows, `--columns` selects fields, `--target-dir` chooses HDFS output, `--num-mappers 1` avoids split-key requirements for this small table.

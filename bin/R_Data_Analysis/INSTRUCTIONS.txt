@@ -1,0 +1,138 @@
+EXPERIMENT 7 — DATA ANALYSIS AND DATA VISUALIZATION USING R
+===========================================================
+
+Aim
+---
+Analyse and visualize student academic-performance data using R/RStudio.
+
+IMPORTANT: The lab manual's Experiment 7 dataset has these columns:
+Student_ID, Gender, Study_Hours, Attendance, Assignment_Score, Internal_Marks, Final_Marks.
+This pack reproduces the 15 records shown in the manual.
+
+A. CHECK R VERSION FIRST (LINUX)
+--------------------------------
+Open Linux Terminal:
+
+    R --version
+    Rscript --version
+
+If R is missing on Ubuntu/Debian:
+    sudo apt update
+    sudo apt install -y r-base
+
+Check:
+    R --version
+    Rscript --version
+
+RStudio is optional for running the R script. The same code runs in the R console or with Rscript. If your college specifically requires RStudio, open it from the Applications menu or run `rstudio` if installed.
+
+B. OPEN THE R FILE
+------------------
+Terminal method (works without RStudio):
+    cd ~/BDA_Practical_7_Experiments/Experiment_7_R_Data_Analysis
+    Rscript experiment7_analysis.R
+
+Interactive R console:
+    R
+At the `>` prompt:
+    source("experiment7_analysis.R")
+
+RStudio method:
+1. Open RStudio.
+2. File > Open File.
+3. Select experiment7_analysis.R.
+4. Click Source, or select all code and click Run.
+5. Plots appear in the Plots pane.
+
+C. TYPE 1 — USE THE DATA ALREADY WRITTEN IN THE R SCRIPT
+--------------------------------------------------------
+The script creates the data frame directly using the 15 rows from the lab manual. This is the fastest method in a practical exam when the dataset is not supplied as a CSV file.
+
+D. TYPE 2 — IMPORT A CSV FILE IN RSTUDIO
+----------------------------------------
+First save your CSV in this experiment folder. The first row must contain the exact column headings:
+Student_ID,Gender,Study_Hours,Attendance,Assignment_Score,Internal_Marks,Final_Marks
+
+METHOD 2A — R CODE (FASTEST AND REPEATABLE)
+In RStudio Console or in an R script:
+
+    data <- read.csv("student_performance.csv", header = TRUE, stringsAsFactors = FALSE)
+    head(data)
+    str(data)
+    summary(data)
+
+If R cannot find the file:
+    getwd()
+    list.files()
+Use the full path if required, for example:
+    data <- read.csv("/home/yourusername/Downloads/student_performance.csv",
+                     header = TRUE, stringsAsFactors = FALSE)
+
+METHOD 2B — RSTUDIO IMPORT DATASET BUTTON
+1. Open RStudio.
+2. In the Environment pane, click Import Dataset.
+3. Choose From Text (base) for a normal CSV.
+4. Browse and select student_performance.csv.
+5. Confirm “First Row as Names” is selected.
+6. Check the preview and separator is Comma.
+7. Set the object name to `data`.
+8. Click Import.
+RStudio generates the equivalent read.csv command and displays the data in the Environment pane.
+
+METHOD 2C — FILE MENU
+Some RStudio versions provide File > Import Dataset. The exact menu wording can vary by version. Use Method 2A if the menu is unavailable.
+
+E. ANALYSIS COMMANDS
+-------------------
+The script performs:
+1. Structure: str(data)
+2. Summary: summary(data)
+3. Mean, median and standard deviation
+4. Minimum and maximum
+5. Gender count: table(data$Gender)
+
+F. VISUALIZATION
+----------------
+The script produces:
+1. Bar chart — count of students by gender.
+2. Histogram — distribution of final marks.
+3. Scatter plot — study hours vs final marks.
+4. Pie chart — gender distribution.
+
+G. RUN ONLY CSV IMPORT ANALYSIS
+-------------------------------
+If you import a CSV into an object named `data`, run these commands:
+
+    str(data)
+    summary(data)
+    mean(data$Final_Marks, na.rm = TRUE)
+    median(data$Final_Marks, na.rm = TRUE)
+    sd(data$Final_Marks, na.rm = TRUE)
+    min(data$Final_Marks, na.rm = TRUE)
+    max(data$Final_Marks, na.rm = TRUE)
+    table(data$Gender)
+    barplot(table(data$Gender), main="Gender Count", xlab="Gender", ylab="Count")
+    hist(data$Final_Marks, main="Final Marks Distribution", xlab="Final Marks")
+    plot(data$Study_Hours, data$Final_Marks, main="Study Hours vs Final Marks",
+         xlab="Study Hours", ylab="Final Marks", pch=19)
+    pie(table(data$Gender), main="Gender Distribution")
+
+H. SAVE OUTPUT
+--------------
+In RStudio use the Plots pane > Export to save charts. In the R console, use:
+    pdf("student_analysis_plots.pdf")
+    source("experiment7_analysis.R")
+    dev.off()
+The script itself prints analysis results and opens plots in the active graphics device.
+
+COMMON ERRORS
+-------------
+• `R: command not found`: install R or use the college-installed RStudio.
+• `cannot open file`: check `getwd()` and `list.files()`, or use the full CSV path.
+• `object 'Final_Marks' not found`: check exact CSV column names with `names(data)`.
+• `NA` results: use `na.rm=TRUE`; inspect missing values with `colSums(is.na(data))`.
+• RStudio Import Dataset is a GUI operation; `read.csv()` is the direct R command equivalent.
+
+VIVA
+----
+A data frame stores tabular data. `str()` displays structure; `summary()` gives descriptive summaries; mean is arithmetic average; median is middle value; standard deviation measures spread; histogram shows a numeric distribution; scatter plot shows relation between two numeric variables; bar chart compares categories; pie chart shows proportions.

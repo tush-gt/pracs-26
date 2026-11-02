@@ -1,0 +1,117 @@
+BDA PRACTICAL – EXPERIMENT 6
+IMPLEMENTATION OF BLOOM FILTER FOR A REAL-WORLD APPLICATION
+THEORY NOTES
+
+1. AIM
+To understand and implement a Bloom Filter, a probabilistic data structure used for memory-efficient membership testing, such as checking whether a student ID may have been registered.
+
+2. WHAT IS A BLOOM FILTER?
+A Bloom Filter is a space-efficient probabilistic data structure that answers the question: "Is this element possibly in the set, or is it definitely not in the set?"
+It uses a bit array and multiple hash functions. It does not store the original elements in the standard form of the data structure.
+
+3. TWO POSSIBLE ANSWERS
+• Definitely not present: At least one bit position calculated for the item is 0. The item could not have been inserted into this Bloom Filter (assuming no deletion or corruption).
+• Possibly present: All calculated bit positions are 1. The item may have been inserted, but those bits may have been set by other items.
+Therefore, a Bloom Filter can produce false positives but a correctly used standard Bloom Filter does not produce false negatives.
+
+4. BIT ARRAY
+A bit array is an array of bits, each of which can contain 0 or 1.
+Initially all positions are 0.
+When an element is inserted, the hash functions calculate positions in the bit array and those positions are changed to 1.
+Different elements can set overlapping positions.
+
+5. HASH FUNCTIONS
+A hash function converts an input value into a numerical hash. The hash is mapped to an array position, usually using modulo the bit-array size.
+A Bloom Filter uses multiple hash positions for each item. A practical implementation may derive several positions from two independent hash digests using double hashing.
+Hash functions should distribute values well to reduce unnecessary collisions.
+
+6. INSERTION PROCESS
+To insert an element:
+1. Convert the item into a consistent byte/string representation.
+2. Apply the hash calculations.
+3. Map the hash values to valid bit-array indexes.
+4. Set every calculated bit to 1.
+Insertion never resets a bit to 0 in the standard Bloom Filter.
+
+7. MEMBERSHIP CHECK PROCESS
+To check an element:
+1. Calculate the same hash positions used during insertion.
+2. Inspect all corresponding bits.
+3. If any bit is 0, return "definitely not present".
+4. If every bit is 1, return "possibly present".
+A positive result should be verified against the original database when exact confirmation is required.
+
+8. FALSE POSITIVE
+A false positive occurs when an item that was never inserted is reported as possibly present because all of its bit positions have already been set by other items.
+The false-positive probability depends mainly on:
+• Number of inserted items (n).
+• Number of bits in the array (m).
+• Number of hash functions (k).
+• Quality and distribution of hash functions.
+
+9. FALSE NEGATIVE
+A false negative would mean an inserted item is reported as absent. A standard Bloom Filter does not produce false negatives when insertion and checking use the same hash logic and the bit array is not incorrectly modified. Variants that support deletion require additional care.
+
+10. IMPORTANT FORMULAS
+Approximate optimal bit-array size:
+m = -(n * ln(p)) / (ln(2))^2
+where:
+m = number of bits,
+n = expected number of inserted elements,
+p = desired false-positive probability.
+Approximate optimal number of hash functions:
+k = (m/n) * ln(2)
+where k is the number of hash functions.
+The formulas help choose memory size and hash count for an expected capacity and error rate.
+If the actual number of inserted items greatly exceeds the expected capacity, the false-positive rate increases.
+
+11. REAL-WORLD APPLICATION: STUDENT REGISTRATION CHECKER
+A college may use a Bloom Filter as a quick preliminary test for student IDs.
+• When a student registers, the ID is inserted into the Bloom Filter.
+• When an ID is checked, a negative result means the ID is definitely not in the registered set.
+• A positive result means the ID may be registered and should be checked in the actual student database.
+The Bloom Filter should not be treated as the authoritative registration record because false positives are possible.
+
+12. ADVANTAGES
+• Very memory-efficient compared with storing a full set of values.
+• Fast insertion.
+• Fast membership checking.
+• Useful as a preliminary filter before expensive database lookups.
+• Can be useful for large sets where exact membership storage is costly.
+
+13. LIMITATIONS
+• False positives are possible.
+• Standard Bloom Filters do not support safe individual deletion.
+• It does not store the original items.
+• The false-positive rate increases when too many elements are inserted.
+• It cannot tell how many times an item was inserted.
+• A positive answer must be verified if exact correctness matters.
+
+14. BLOOM FILTER VS HASH SET / HASH MAP
+A hash set stores keys and can answer exact membership queries, subject to normal implementation assumptions. A Bloom Filter stores only bit information and uses much less memory, but can return false positives. A hash map stores key-value associations; a standard Bloom Filter does not store associated values.
+
+15. VARIANTS
+• Counting Bloom Filter: Uses counters instead of single bits and can support deletion with appropriate counter handling.
+• Scalable Bloom Filter: Can grow as more elements are added while managing false-positive probability.
+• Cuckoo Filter: An alternative probabilistic membership structure that can support deletion.
+
+16. APPLICATIONS
+Database query optimization, cache filtering, web crawlers, duplicate detection, network systems, distributed storage, and checking whether an item may exist before performing a more expensive lookup.
+
+17. IMPORTANT VIVA QUESTIONS
+Q: What is a Bloom Filter?
+A: A space-efficient probabilistic structure for membership testing.
+Q: What does a bit array contain?
+A: Bits with values 0 or 1.
+Q: What is a false positive?
+A: An absent item is reported as possibly present.
+Q: Can a standard Bloom Filter have false negatives?
+A: Not under correct insertion/checking without deletion or corruption.
+Q: Does it store actual elements?
+A: No, it stores bit positions.
+Q: What happens if any checked bit is zero?
+A: The item is definitely not present.
+Q: What happens if all checked bits are one?
+A: The item is possibly present.
+Q: Why use multiple hash functions?
+A: To calculate multiple bit positions for each element and control false-positive behavior.

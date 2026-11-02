@@ -1,0 +1,103 @@
+EXPERIMENT 5 — INSTALL/CONFIGURE APACHE PIG AND RUN PIG LATIN QUERIES
+====================================================================
+
+Aim
+---
+Load and analyse the agriculture crop dataset and Amazon dataset using Pig Latin.
+
+A. CHECK TOOLS FIRST
+--------------------
+    java -version
+    hadoop version
+    pig -version
+    hdfs dfs -ls /
+
+If Pig is installed and `pig -version` works, skip installation.
+
+B. INSTALLATION NOTE
+--------------------
+Apache Pig is a legacy project and may not be packaged for current Linux distributions. Use the college-provided Pig binary and the Hadoop/Java combination tested in your lab. Do not assume `sudo apt install pig` will provide a compatible Apache Pig version.
+
+If a Pig binary archive is provided by your college:
+    tar -xzf pig-<VERSION>.tar.gz
+    sudo mv pig-<VERSION> /opt/pig
+
+Set paths (replace the version/path with the actual extracted folder):
+    echo 'export PIG_HOME=/opt/pig' >> ~/.bashrc
+    echo 'export PATH=$PATH:$PIG_HOME/bin' >> ~/.bashrc
+    source ~/.bashrc
+    pig -version
+
+C. DATASETS
+-----------
+The manual specifies:
+1. crop_production.csv — available on Moodle.
+2. Amazon dataset — use the CSV provided by your instructor/Moodle.
+
+Copy the CSV files into this experiment folder. Check their headers before running:
+    head -n 3 crop_production.csv
+    head -n 3 amazon.csv
+
+The sample scripts assume the following agriculture column order:
+State_Name,District_Name,Crop_Year,Season,Crop,Area,Production
+
+The sample Amazon script assumes:
+order_id,state,amount
+
+If your real Amazon CSV has different columns or order, change the LOAD schema in amazon_analysis.pig to match the header and values. Do not blindly run a schema against a different CSV.
+
+D. START PIG IN LOCAL MODE
+--------------------------
+Local mode reads files from your Linux local filesystem and is easiest for a practical if supported:
+
+    cd ~/BDA_Practical_7_Experiments/Experiment_5_Apache_Pig
+    pig -x local
+
+At the `grunt>` prompt, execute the statements in agriculture_analysis.pig one at a time, or paste the file using:
+    exec agriculture_analysis.pig;
+
+To run a script directly from Linux terminal:
+    pig -x local agriculture_analysis.pig
+
+E. AGRICULTURE QUERIES
+----------------------
+1. Load dataset.
+2. DUMP and DESCRIBE.
+3. Group records state-wise.
+4. Find the highest-production crop record in each state.
+5. Store result.
+6. Transfer data_top.txt from local file system into HDFS.
+
+Use:
+    hdfs dfs -mkdir -p /user/$(whoami)/pig
+    hdfs dfs -put -f data_top.txt /user/$(whoami)/pig/
+
+Verify:
+    hdfs dfs -ls /user/$(whoami)/pig
+    hdfs dfs -cat /user/$(whoami)/pig/data_top.txt
+
+F. AMAZON QUERIES
+-----------------
+Load dataset, DESCRIBE, group by state, count orders, calculate total sales and average order amount, store result, verify stored output.
+
+G. HADOOP MODE (IF ASKED)
+-------------------------
+If your lab expects Pig to run on Hadoop rather than local mode, start HDFS/YARN first:
+    start-dfs.sh
+    start-yarn.sh
+Then:
+    pig
+At `grunt>` use HDFS paths in LOAD/STORE. Confirm with the instructor whether local or Hadoop mode is expected.
+
+COMMON ERRORS
+-------------
+• `pig: command not found`: PIG_HOME/PATH not set or Pig not installed.
+• Pig parser error: check commas, aliases, field names, quotes and semicolons.
+• File not found: run `pwd`, `ls -l`, and use the correct CSV path.
+• NumberFormatException: numeric column contains text/header/blank values; skip header or clean the CSV.
+• Schema mismatch: inspect `head -n 3` and adjust LOAD schema.
+• DUMP can print a lot; use LIMIT before DUMP for large datasets.
+
+VIVA
+----
+Pig is a high-level data-flow platform for Hadoop. Pig Latin is its scripting language. LOAD reads data; FILTER selects rows; GROUP groups records; FOREACH transforms; GENERATE selects/calculates fields; DUMP displays; STORE saves results.

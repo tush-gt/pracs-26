@@ -1,0 +1,143 @@
+BDA PRACTICAL – EXPERIMENT 4
+NOSQL DATABASE OPERATIONS USING MONGODB
+THEORY NOTES
+
+1. AIM
+To understand NoSQL databases and perform database, collection, document, query, update, and delete operations using MongoDB.
+
+2. WHAT IS A DATABASE?
+A database is an organized collection of data. A database management system (DBMS) provides facilities to store, retrieve, update, and manage data.
+
+3. WHAT IS NOSQL?
+NoSQL means "Not Only SQL". It refers to database systems that use data models other than, or in addition to, the traditional relational table model. Many NoSQL systems are designed for flexible schemas, horizontal scaling, or particular access patterns.
+Common NoSQL categories:
+• Document databases – store records as documents, e.g. MongoDB.
+• Key-value databases – store key/value pairs.
+• Wide-column databases – organize data by column families.
+• Graph databases – represent entities and relationships as graphs.
+
+4. WHAT IS MONGODB?
+MongoDB is a document-oriented NoSQL database. It stores records as BSON documents. BSON is a binary representation of JSON-like documents and supports additional data types.
+A document contains fields and values. Documents in a collection do not always need exactly the same fields, although applications often enforce a consistent structure.
+
+5. SQL AND MONGODB TERMINOLOGY
+Relational database -> MongoDB:
+• Database -> Database.
+• Table -> Collection.
+• Row -> Document.
+• Column -> Field.
+• Primary key -> _id field.
+MongoDB automatically creates an _id value if one is not supplied. The _id value must be unique within a collection.
+
+6. DATABASE, COLLECTION, DOCUMENT
+Database: A container for collections.
+Collection: A group of documents, broadly comparable to a relational table.
+Document: A set of field/value pairs, broadly comparable to a row.
+Example document:
+{
+  "_id": 1,
+  "name": "Amit",
+  "age": 25,
+  "disease": "Fever",
+  "fees": 500
+}
+The fields in a document can include strings, numbers, dates, arrays, nested documents, and other supported BSON types.
+
+7. MONGOSH
+mongosh is the MongoDB Shell. It is an interactive command-line environment used to connect to MongoDB and execute database commands and JavaScript expressions.
+Commands such as use, db.createCollection(), insertOne(), find(), updateOne(), and deleteOne() are entered in mongosh, not in the ordinary Linux shell.
+
+8. CRUD OPERATIONS
+CRUD stands for:
+• Create – insert new documents.
+• Read – retrieve documents.
+• Update – modify existing documents.
+• Delete – remove documents.
+Examples:
+Create: db.Patients.insertOne({name: "Amit"})
+Read: db.Patients.find()
+Update: db.Patients.updateOne({name: "Amit"}, {$set: {fees: 600}})
+Delete: db.Patients.deleteOne({name: "Amit"})
+
+9. INSERT OPERATIONS
+• insertOne(document) inserts one document.
+• insertMany([documents]) inserts multiple documents.
+If an explicitly supplied _id duplicates an existing _id, MongoDB reports a duplicate-key error.
+
+10. READ / QUERY OPERATIONS
+• find() returns documents matching a filter.
+• findOne() returns one matching document.
+• An empty filter {} matches all documents.
+Comparison operators:
+• $gt – greater than.
+• $lt – less than.
+• $gte – greater than or equal.
+• $lte – less than or equal.
+• $ne – not equal.
+• $eq – equal.
+Logical operators:
+• $and – all specified conditions must be true.
+• $or – at least one specified condition must be true.
+Projection controls which fields are returned. A value of 1 includes a field and 0 excludes it, with special handling for _id. Inclusion and exclusion generally cannot be mixed in one projection except for excluding _id from an inclusion projection.
+sort({field: 1}) sorts ascending; sort({field: -1}) sorts descending.
+
+11. UPDATE OPERATIONS
+• updateOne(filter, update) modifies one matching document.
+• updateMany(filter, update) modifies all matching documents.
+• $set assigns a field a value.
+• $inc increases or decreases a numeric field.
+• $unset removes a field.
+Update operators should be used to specify how a document changes.
+
+12. DELETE OPERATIONS
+• deleteOne(filter) removes one matching document.
+• deleteMany(filter) removes all matching documents.
+Use a careful filter. An empty filter in deleteMany({}) matches every document in the collection and can delete all its data.
+
+13. COUNT AND COLLECTION COMMANDS
+• countDocuments(filter) returns the number of matching documents.
+• db.createCollection(name) explicitly creates a collection.
+• show dbs lists databases with stored data.
+• show collections lists collections in the current database.
+• db.collection.find().pretty() may format output for easier reading in shell versions that support it.
+
+14. MONGODB VS RELATIONAL DATABASES
+Relational databases commonly use tables, predefined schemas, joins, and SQL. MongoDB stores BSON documents in collections and supports flexible document structures and nested data.
+The choice depends on the application, data relationships, consistency needs, query patterns, and operational requirements. NoSQL is not automatically better than SQL for every workload.
+
+15. ADVANTAGES
+• Flexible document structure.
+• Supports nested documents and arrays.
+• Query and indexing capabilities.
+• Can scale horizontally using sharding.
+• Useful for application data with document-shaped records.
+
+16. LIMITATIONS / CONSIDERATIONS
+• Data modeling requires attention to document size and access patterns.
+• Flexible schemas can lead to inconsistent data if validation is not applied.
+• Relationships and complex joins may require careful modeling or aggregation.
+• Indexes improve reads but consume storage and can slow writes.
+• Backups, security, and replication must be configured correctly.
+
+17. APPLICATIONS
+Content management, product catalogs, user profiles, event data, application backends, inventory, and data with flexible or nested structures.
+
+18. IMPORTANT VIVA QUESTIONS
+Q: What is MongoDB?
+A: A document-oriented NoSQL database.
+Q: What is BSON?
+A: MongoDB's binary document representation based on JSON-like structures.
+Q: What is a collection?
+A: A group of MongoDB documents.
+Q: What is _id?
+A: The unique identifier field of a document.
+Q: What is CRUD?
+A: Create, Read, Update, and Delete.
+Q: Difference between insertOne and insertMany?
+A: One inserts a single document; the other inserts multiple documents.
+Q: Difference between updateOne and updateMany?
+A: One updates one matching document; the other updates all matching documents.
+Q: What does $gt mean?
+A: Greater than.
+Q: What is projection?
+A: Selecting which fields are returned in query results.

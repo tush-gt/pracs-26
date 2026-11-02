@@ -1,0 +1,60 @@
+2. How to execute on your college Linux PC
+Open Terminal and follow these steps:
+
+Step 1: Check Python version
+python3 --version
+
+
+Step 2: Create a folder
+mkdir DGIM_Experiment
+cd DGIM_Experiment
+
+
+Step 3: Create the Python file
+nano DGIM.py
+
+
+Paste the complete code.
+
+Save using:
+- Ctrl + O, then Enter
+- Ctrl + X
+Step 4: Execute
+python3 DGIM.py
+
+
+3. Expected output
+Input Stream: [1, 0, 1, 1, 0, 1, 0, 1, 1, 0]
+Buckets: ...
+Estimated number of 1s in last 5 bits: ...
+Estimated number of 1s in last 10 bits: ...
+
+
+The bucket details and estimates are calculated by the program.
+4. Important viva questions
+Q1. What is DGIM?
+
+DGIM is a streaming algorithm used to estimate the number of 1s in the last N bits of a data stream.
+
+Q2. Why do we use DGIM?
+
+It reduces memory usage while processing large data streams.
+
+Q3. What is a bucket?
+
+A bucket stores the size of a group of 1s and the timestamp of its most recent bit.
+
+Q4. How many buckets of the same size are allowed?
+
+At most two. When a third bucket of the same size appears, the two oldest are merged.
+
+Q5. Is DGIM exact?
+
+No. It provides an approximate count because it estimates the contribution of the oldest bucket.
+
+Q6. Where is DGIM used?
+- Network traffic monitoring
+- Website visit counting
+- Real-time event analysis
+- Data stream processing
+Important: The code uses a simplified DGIM implementation for practical demonstration. DGIM gives an approximate answer, not an exact count. The oldest relevant bucket is counted as half its size.

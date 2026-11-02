@@ -1,0 +1,274 @@
+EXPERIMENT 1 — INSTALL AND CONFIGURE HADOOP IN PSEUDO-DISTRIBUTED MODE
+======================================================================
+
+Aim
+---
+Install/configure Hadoop in pseudo-distributed mode and practise HDFS commands.
+
+What pseudo-distributed means
+-----------------------------
+All Hadoop daemons run as separate processes on one Linux computer. HDFS is used, unlike standalone mode.
+
+A. OPEN TERMINAL AND CHECK THE MACHINE FIRST
+--------------------------------------------
+Run one command at a time:
+
+    whoami
+    pwd
+    cat /etc/os-release
+    java -version
+    javac -version
+    ssh -V
+    hadoop version
+    jps
+
+If `hadoop: command not found`, Hadoop is not on PATH or is not installed.
+If `java: command not found`, Java is missing.
+If `jps: command not found`, install the JDK (not only a JRE).
+Do not continue to the HDFS commands until `hadoop version` works.
+
+B. INSTALL JAVA AND BASIC UTILITIES (ONLY IF MISSING)
+-----------------------------------------------------
+Ubuntu/Debian:
+
+    sudo apt update
+    sudo apt install -y openjdk-11-jdk openssh-server rsync wget tar
+
+Check:
+
+    java -version
+    javac -version
+    which java
+    readlink -f "$(which java)"
+    jps
+
+Hadoop 3.3.x is commonly run with Java 8 or 11. If the lab image has a different Hadoop/Java combination, use the lab's combination rather than changing it blindly.
+
+C. INSTALL HADOOP (ONLY IF NOT ALREADY INSTALLED)
+-------------------------------------------------
+This is a manual single-node setup. It requires internet access and permission to write under /opt.
+
+    cd /tmp
+    wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+    tar -xzf hadoop-3.3.6.tar.gz
+    sudo mv hadoop-3.3.6 /opt/hadoop
+
+Set environment variables for the current terminal:
+
+    export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(which javac)")")")"
+    export HADOOP_HOME=/opt/hadoop
+    export HADOOP_INSTALL=$HADOOP_HOME
+    export HADOOP_COMMON_HOME=$HADOOP_HOME
+    export HADOOP_HDFS_HOME=$HADOOP_HOME
+    export HADOOP_MAPRED_HOME=$HADOOP_HOME
+    export HADOOP_YARN_HOME=$HADOOP_HOME
+    export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+    export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+    export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native"
+
+    echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+    echo 'export HADOOP_HOME=/opt/hadoop' >> ~/.bashrc
+    echo 'export HADOOP_INSTALL=$HADOOP_HOME' >> ~/.bashrc
+    echo 'export HADOOP_COMMON_HOME=$HADOOP_HOME' >> ~/.bashrc
+    echo 'export HADOOP_HDFS_HOME=$HADOOP_HOME' >> ~/.bashrc
+    echo 'export HADOOP_MAPRED_HOME=$HADOOP_HOME' >> ~/.bashrc
+    echo 'export HADOOP_YARN_HOME=$HADOOP_HOME' >> ~/.bashrc
+    echo 'export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin' >> ~/.bashrc
+    source ~/.bashrc
+
+Verify:
+
+    hadoop version
+    hdfs version
+    echo "$JAVA_HOME"
+    echo "$HADOOP_HOME"
+
+If `JAVA_HOME` is wrong, locate the JDK with `readlink -f "$(which javac)"` and set JAVA_HOME to the JDK root (the parent directory above `bin/javac`).
+
+D. CONFIGURE SSH FOR LOCALHOST
+------------------------------
+    sudo systemctl enable --now ssh
+    ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/authorized_keys
+    ssh localhost
+
+The first SSH connection may ask `Are you sure you want to continue connecting?` Type `yes`.
+If SSH says connection refused, check: `sudo systemctl status ssh`.
+
+E. CONFIGURE HADOOP XML FILES
+-----------------------------
+Open the configuration directory:
+
+    cd "$HADOOP_HOME/etc/hadoop"
+
+Set Java path in hadoop-env.sh. Find the exact Java path first:
+
+    readlink -f "$(which javac)"
+
+Edit:
+
+    nano hadoop-env.sh
+
+Add/update the JAVA_HOME line (use the actual path returned on your PC), for example:
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+Create/replace core-site.xml:
+
+    nano core-site.xml
+
+Paste:
+
+    <configuration>
+      <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://localhost:9000</value>
+      </property>
+    </configuration>
+
+Create/replace hdfs-site.xml:
+
+    nano hdfs-site.xml
+
+Paste:
+
+    <configuration>
+      <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+      </property>
+      <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:///home/REPLACE_WITH_LINUX_USERNAME/hadoopdata/hdfs/namenode</value>
+      </property>
+      <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:///home/REPLACE_WITH_LINUX_USERNAME/hadoopdata/hdfs/datanode</value>
+      </property>
+    </configuration>
+
+IMPORTANT: Replace REPLACE_WITH_LINUX_USERNAME with the output of `whoami`. Do not leave the placeholder in the file. Create the directories:
+
+    mkdir -p ~/hadoopdata/hdfs/namenode
+    mkdir -p ~/hadoopdata/hdfs/datanode
+
+Create/replace mapred-site.xml:
+
+    cp mapred-site.xml.template mapred-site.xml
+    nano mapred-site.xml
+
+Paste:
+
+    <configuration>
+      <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+      </property>
+    </configuration>
+
+Create/replace yarn-site.xml:
+
+    nano yarn-site.xml
+
+Paste:
+
+    <configuration>
+      <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+      </property>
+    </configuration>
+
+Save nano files using Ctrl+O, Enter, Ctrl+X.
+
+F. FORMAT AND START HADOOP — FIRST-TIME SETUP ONLY
+--------------------------------------------------
+WARNING: Run the format command only when creating a brand-new HDFS directory for the first time. Never run it just because Hadoop failed to start.
+
+    hdfs namenode -format
+    start-dfs.sh
+    start-yarn.sh
+    jps
+
+Expected process names normally include NameNode, DataNode, SecondaryNameNode, ResourceManager, and NodeManager. Some lab configurations may differ.
+Open the web interfaces if available:
+    http://localhost:9870
+    http://localhost:8088
+
+If the daemons do not start, inspect:
+    ls -l "$HADOOP_HOME"/logs
+    tail -n 60 "$HADOOP_HOME"/logs/*namenode*.log
+    tail -n 60 "$HADOOP_HOME"/logs/*datanode*.log
+
+G. HDFS COMMANDS FOR PRACTICAL
+-------------------------------
+Create a directory in HDFS:
+
+    hdfs dfs -mkdir -p /user/$(whoami)/bda
+
+Create a local test file:
+
+    printf 'Hadoop is a big data framework\nHDFS stores distributed data\nHadoop processes big data\n' > input.txt
+
+Upload local file to HDFS:
+
+    hdfs dfs -put -f input.txt /user/$(whoami)/bda/
+
+List HDFS directory:
+
+    hdfs dfs -ls /user/$(whoami)/bda
+
+Display file content:
+
+    hdfs dfs -cat /user/$(whoami)/bda/input.txt
+
+Copy file from HDFS to local:
+
+    hdfs dfs -get -f /user/$(whoami)/bda/input.txt ./downloaded_input.txt
+
+Create an HDFS empty file:
+
+    hdfs dfs -touchz /user/$(whoami)/bda/empty.txt
+
+Check HDFS disk usage:
+
+    hdfs dfs -du -h /user/$(whoami)/bda
+
+Check HDFS capacity:
+
+    hdfs dfs -df -h /
+
+Copy inside HDFS:
+
+    hdfs dfs -cp /user/$(whoami)/bda/input.txt /user/$(whoami)/bda/input_copy.txt
+
+Rename inside HDFS:
+
+    hdfs dfs -mv /user/$(whoami)/bda/input_copy.txt /user/$(whoami)/bda/renamed.txt
+
+Remove one file:
+
+    hdfs dfs -rm /user/$(whoami)/bda/renamed.txt
+
+Remove a directory recursively (only when you are sure):
+
+    hdfs dfs -rm -r /user/$(whoami)/bda
+
+H. STOP SERVICES AFTER PRACTICAL
+--------------------------------
+    stop-yarn.sh
+    stop-dfs.sh
+
+COMMON ERRORS
+-------------
+• `JAVA_HOME is not set`: set JAVA_HOME in hadoop-env.sh to the JDK root, not to bin/java.
+• `ssh: connect to host localhost port 22: Connection refused`: start/enable ssh service; lab may restrict sudo.
+• `NameNode is in safe mode`: check `hdfs dfsadmin -safemode get`; wait for DataNode registration. Do not format.
+• `File exists`: use `hdfs dfs -put -f` for overwrite, or choose a new HDFS output path.
+• `Output directory already exists`: Hadoop MapReduce requires a new output directory; remove only the old output directory with `hdfs dfs -rm -r /path`.
+• If Hadoop is preinstalled by college, do not redo installation or formatting; start with section A and use the lab configuration.
+
+VIVA QUICK POINTS
+-----------------
+NameNode stores HDFS metadata; DataNode stores blocks; SecondaryNameNode makes checkpoints (not a live backup); HDFS is storage; YARN manages resources; MapReduce processes data; pseudo-distributed means one machine with separate daemons.

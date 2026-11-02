@@ -1,0 +1,151 @@
+BDA PRACTICAL – EXPERIMENT 7
+DATA ANALYSIS AND VISUALIZATION USING R
+THEORY NOTES
+
+1. AIM
+To understand the R programming language and use it to inspect, summarize, analyze, and visualize a student academic-performance dataset.
+
+2. WHAT IS DATA ANALYSIS?
+Data analysis is the process of examining, cleaning, transforming, summarizing, and interpreting data to obtain useful information and support decisions.
+Typical stages include:
+• Understanding the problem and dataset.
+• Inspecting rows, columns, and data types.
+• Checking missing or invalid values.
+• Computing descriptive statistics.
+• Exploring relationships between variables.
+• Visualizing patterns.
+• Interpreting and communicating findings.
+
+3. WHAT IS R?
+R is a programming language and software environment for statistical computing, data analysis, and graphics. It provides built-in statistical functions and a large collection of packages for data manipulation, modeling, and visualization.
+
+4. WHAT IS RSTUDIO?
+RStudio is an integrated development environment (IDE) commonly used to work with R. It provides a source editor, console, environment/history pane, and plots/files/packages/help panes.
+R is the language/runtime. RStudio is an application that makes writing and managing R work convenient. Installing R is normally required before using RStudio Desktop.
+
+5. RSTUDIO INTERFACE
+• Source Editor: Write and save R scripts.
+• Console: Execute R commands and view results.
+• Environment: View objects such as variables and data frames.
+• History: Review previously executed commands.
+• Files: Browse files in the working directory.
+• Plots: View generated charts.
+• Packages: Install and manage packages.
+• Help: Read function documentation.
+
+6. DATA FRAME
+A data frame is a two-dimensional tabular structure in R. Each column can have a different data type, but all columns have the same number of rows.
+For a student dataset, columns may include Student_ID, Gender, Study_Hours, Attendance, Assignment_Score, Internal_Marks, and Final_Marks.
+A data frame is commonly created with data.frame().
+
+7. INSPECTING DATA
+• print(data): displays an object.
+• head(data): shows the first rows.
+• tail(data): shows the last rows.
+• str(data): displays the structure, column names, and data types.
+• summary(data): gives summary statistics for each column.
+• dim(data): returns number of rows and columns.
+• names(data): returns column names.
+• nrow(data): returns number of rows.
+• ncol(data): returns number of columns.
+Inspection helps identify incorrect data types, unexpected values, and missing information before analysis.
+
+8. ACCESSING COLUMNS
+The dollar operator accesses a column by name.
+Example concept: student_data$Final_Marks returns the Final_Marks column.
+A column can also be accessed by square-bracket indexing. Correct column names and spelling are important.
+
+9. DESCRIPTIVE STATISTICS
+Descriptive statistics summarize the main features of data.
+• Mean: arithmetic average; sum of observations divided by number of observations.
+• Median: middle value after sorting. For an even number of observations, it is commonly the average of the two middle values.
+• Minimum: smallest observed value.
+• Maximum: largest observed value.
+• Range: maximum minus minimum.
+• Variance: average squared deviation from the mean, with the exact denominator depending on the sample/population convention.
+• Standard deviation: square root of variance; describes spread around the mean.
+R functions include mean(), median(), min(), max(), range(), var(), and sd().
+By default, many of these functions return NA when missing values are present unless na.rm = TRUE is supplied.
+
+10. FREQUENCY TABLE
+table() counts occurrences of values in a categorical variable.
+For example, table(student_data$Gender) can count the number of students in each gender category.
+Frequency tables are useful before creating bar charts or pie charts.
+
+11. DATA VISUALIZATION
+Data visualization represents data graphically so that patterns, comparisons, distributions, and relationships can be understood more easily.
+A good graph should have a clear title, meaningful axis labels, appropriate scales, and a chart type suited to the data.
+
+12. BAR CHART
+A bar chart compares values across categories. The bars are separated to show distinct categories.
+Example: number of students in each gender category.
+In base R, barplot() creates a bar chart. It is often supplied with a frequency table or summary values.
+Use it for categorical comparisons, not as the default way to show a continuous distribution.
+
+13. HISTOGRAM
+A histogram displays the frequency distribution of a numerical variable. It divides the numeric range into intervals called bins or breaks and shows how many observations fall in each interval.
+In base R, hist() creates a histogram.
+The shape can help identify concentration, spread, skewness, gaps, or possible outliers. The appearance depends on the selected bin widths.
+
+14. SCATTER PLOT
+A scatter plot displays paired observations for two numerical variables. Each point represents one observation.
+In base R, plot(x, y) can create a scatter plot.
+It can help identify positive association, negative association, no obvious association, clusters, and outliers. A visible association does not by itself prove causation.
+
+15. PIE CHART
+A pie chart displays categories as slices of a circle, where slice size represents each category's share of the total.
+In base R, pie() creates a pie chart.
+Pie charts are most readable when there are only a small number of categories. Bar charts are often easier for precise comparisons.
+
+16. STUDENT PERFORMANCE ANALYSIS
+A student performance dataset can be explored by:
+• Calculating the mean and median of final marks.
+• Measuring the spread of final marks using standard deviation.
+• Counting students by category.
+• Plotting study hours against final marks.
+• Examining attendance and assignment scores.
+A scatter plot can suggest whether study hours and marks move together, but the dataset alone does not establish that study hours caused the marks.
+
+17. MISSING VALUES AND DATA QUALITY
+R represents missing values using NA.
+Use is.na() to identify missing values. Use sum(is.na(data)) to count missing cells.
+Functions such as mean() can use na.rm = TRUE to ignore missing values, but missingness should be investigated rather than automatically ignored.
+Check for impossible values, inconsistent category labels, duplicates, and incorrect numeric/text types.
+
+18. ADVANTAGES OF R
+• Free and open source.
+• Strong statistical and visualization capabilities.
+• Large package ecosystem.
+• Suitable for exploratory data analysis and research.
+• Works across major operating systems.
+• Supports reproducible scripts and reports.
+
+19. LIMITATIONS / CONSIDERATIONS
+• Some tasks require learning R syntax and package conventions.
+• Very large in-memory datasets may require specialized tools or approaches.
+• Different packages may use different syntax and defaults.
+• Results must be interpreted carefully; charts and statistics do not automatically establish causation.
+
+20. IMPORTANT VIVA QUESTIONS
+Q: What is R?
+A: A language and environment for statistical computing, data analysis, and graphics.
+Q: What is RStudio?
+A: An IDE used to work with R.
+Q: What is a data frame?
+A: A two-dimensional tabular data structure in R.
+Q: What does str() do?
+A: Displays the structure and data types of an object.
+Q: What does summary() do?
+A: Provides summary statistics for an object.
+Q: What is mean?
+A: The arithmetic average.
+Q: What is median?
+A: The middle value of ordered observations.
+Q: What does standard deviation measure?
+A: The spread of values around the mean.
+Q: Difference between bar chart and histogram?
+A: Bar chart compares categories; histogram shows the distribution of numerical values.
+Q: What is a scatter plot used for?
+A: Exploring the relationship between two numerical variables.
+Q: What does table() do?
+A: Counts frequencies of categorical values.

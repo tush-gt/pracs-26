@@ -1,0 +1,131 @@
+EXPERIMENT 4 — INSTALL/CONFIGURE MONGODB AND EXECUTE NOSQL COMMANDS
+==================================================================
+
+Aim
+---
+Create a Hospital database and perform insert, find, update, delete, projection, sort and count operations.
+
+A. CHECK FIRST
+--------------
+    mongosh --version
+    mongod --version
+    systemctl status mongod
+
+If `mongosh` and `mongod` are already available, do not reinstall.
+
+B. INSTALLATION (ONLY IF MISSING)
+---------------------------------
+MongoDB Community Server is not always available in the default Ubuntu repository. Use the official MongoDB installation instructions matching your Ubuntu release. Do not use an old random PPA or mix packages from different Ubuntu versions.
+
+Check OS:
+    cat /etc/os-release
+
+For a practical exam, the safest route is to use the college-installed MongoDB service. If installation is required, follow the official MongoDB Community Server installation guide for your exact Ubuntu version:
+    https://www.mongodb.com/docs/manual/administration/install-on-linux/
+
+After installation:
+    sudo systemctl enable --now mongod
+    sudo systemctl status mongod
+    mongosh --version
+    mongosh
+
+If `mongosh` opens but connection fails, check:
+    sudo systemctl status mongod
+    sudo journalctl -u mongod -n 50 --no-pager
+
+C. RUN THE COMMANDS
+-------------------
+Open shell:
+    mongosh
+
+At the `test>` or `>` prompt, type the JavaScript/MongoDB commands below. Do not type `mongosh` again inside the shell.
+
+Create/select database:
+    use Hospital
+
+Create collection:
+    db.createCollection("Patients")
+
+Insert one patient:
+    db.Patients.insertOne({patient_id: 101, name: "Asha", age: 35, disease: "Fever", fees: 500})
+
+Insert multiple patients:
+    db.Patients.insertMany([
+      {patient_id: 102, name: "Ravi", age: 42, disease: "Diabetes", fees: 1200},
+      {patient_id: 103, name: "Neha", age: 28, disease: "Fever", fees: 700},
+      {patient_id: 104, name: "Kiran", age: 55, disease: "BP", fees: 1500},
+      {patient_id: 105, name: "Meera", age: 31, disease: "Asthma", fees: 900}
+    ])
+
+Display all:
+    db.Patients.find()
+
+Readable display:
+    db.Patients.find().pretty()
+
+Find by patient ID:
+    db.Patients.find({patient_id: 103})
+
+Find by disease:
+    db.Patients.find({disease: "Fever"})
+
+Find fees greater than 800:
+    db.Patients.find({fees: {$gt: 800}})
+
+AND condition:
+    db.Patients.find({$and: [{age: {$gt: 30}}, {fees: {$gt: 700}}]})
+
+OR condition:
+    db.Patients.find({$or: [{disease: "Fever"}, {disease: "BP"}]})
+
+Projection (show name and disease, hide _id):
+    db.Patients.find({}, {_id: 0, name: 1, disease: 1})
+
+Sort by fees ascending:
+    db.Patients.find().sort({fees: 1})
+
+Sort by fees descending:
+    db.Patients.find().sort({fees: -1})
+
+Update one:
+    db.Patients.updateOne({patient_id: 101}, {$set: {disease: "Recovered"}})
+
+Update many:
+    db.Patients.updateMany({disease: "Fever"}, {$set: {status: "Under Observation"}})
+
+Increase fees:
+    db.Patients.updateMany({}, {$inc: {fees: 100}})
+
+Delete one:
+    db.Patients.deleteOne({patient_id: 105})
+
+Delete patients with fees greater than 1500:
+    db.Patients.deleteMany({fees: {$gt: 1500}})
+
+Display remaining:
+    db.Patients.find()
+
+Count:
+    db.Patients.countDocuments()
+
+Exit:
+    exit
+
+D. RESET FOR A FRESH DEMO
+-------------------------
+If you need to repeat from the beginning, at mongosh prompt:
+    use Hospital
+    db.Patients.drop()
+Then recreate and insert the records. Do not run this if you need to retain data.
+
+COMMON ERRORS
+-------------
+• `mongosh: command not found`: shell is not installed or not on PATH.
+• Connection refused: mongod service is not running.
+• Duplicate key: patient_id may already exist; clear the collection or use different IDs.
+• `use Hospital` only switches database; it does not permanently create it until data is written.
+• MongoDB uses BSON documents and collections; it is a NoSQL document database.
+
+VIVA
+----
+CRUD = Create, Read, Update, Delete. `$gt` means greater than; `$set` assigns a value; `$inc` increments a numeric value; projection selects fields; sort 1 ascending and -1 descending.

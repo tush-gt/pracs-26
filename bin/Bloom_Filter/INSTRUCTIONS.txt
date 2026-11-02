@@ -1,0 +1,55 @@
+EXPERIMENT 6 — BLOOM FILTER FOR STUDENT ID REGISTRATION CHECKING
+================================================================
+
+Aim
+---
+Implement a Bloom Filter for a college student registration lookup.
+
+A. CHECK PYTHON
+---------------
+    python3 --version
+    which python3
+
+If missing on Ubuntu/Debian:
+    sudo apt update
+    sudo apt install -y python3
+
+The program uses only Python standard-library modules (math, hashlib); no pip packages are required.
+
+B. CREATE/RUN THE PROGRAM
+-------------------------
+    cd ~/BDA_Practical_7_Experiments/Experiment_6_Bloom_Filter
+    python3 student_bloom_filter.py
+
+C. MENU
+-------
+1. Register a new Student ID.
+2. Check whether a Student ID possibly exists.
+3. View actual registered IDs (demo database).
+4. Inspect first 64 bits.
+5. Exit.
+
+Try:
+• Option 2, enter a preloaded ID such as 2023120045 — it should say POSSIBLY REGISTERED and database confirms.
+• Option 2, enter an unused ID — usually says DEFINITELY NOT REGISTERED.
+• Option 1, register a new ID such as 2023120099.
+• Register the same ID again — duplicate registration is rejected.
+
+D. CONCEPT
+----------
+A Bloom Filter is a space-efficient probabilistic data structure used to test set membership. It has a bit array and multiple hash functions.
+• If any required bit is 0: the item is definitely not present.
+• If all required bits are 1: the item is possibly present (may be a false positive).
+• Standard Bloom Filters do not produce false negatives if items are inserted correctly and the filter is not corrupted.
+The actual set in this demonstration is used as a mock database to verify the Bloom Filter answer.
+
+E. COMMON ERRORS
+----------------
+• `python: command not found`: use `python3`.
+• IndentationError: do not remove spaces at the beginning of Python blocks.
+• The program requires no third-party packages.
+• This Bloom Filter is in-memory; closing the program resets the bit array and demo database.
+
+VIVA
+----
+m = -n ln(p)/(ln 2)^2 is the approximate optimal bit-array size. k = (m/n)ln2 is the approximate number of hash functions. A false positive means the filter says “possibly present” for an item that is not in the actual set.

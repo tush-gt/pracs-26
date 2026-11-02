@@ -1,0 +1,141 @@
+BDA PRACTICAL – EXPERIMENT 5
+DATA ANALYSIS USING APACHE PIG AND PIG LATIN
+THEORY NOTES
+
+1. AIM
+To understand Apache Pig and use Pig Latin statements to load, inspect, filter, group, transform, sort, aggregate, and store large datasets.
+
+2. WHAT IS APACHE PIG?
+Apache Pig is a high-level platform for analyzing large datasets in the Hadoop ecosystem. It allows users to express data-processing workflows using Pig Latin rather than writing every operation as a low-level Java MapReduce program.
+Pig is particularly associated with data-flow processing: data is loaded, transformed through a sequence of operations, and stored or displayed.
+
+3. WHAT IS PIG LATIN?
+Pig Latin is the data-flow scripting language used by Apache Pig. A Pig Latin script describes a sequence of transformations on relations.
+A relation in Pig is a bag of tuples. A tuple is an ordered set of fields, and a bag is a collection of tuples. A relation may have a schema that describes field names and types.
+
+4. PIG ARCHITECTURE
+A typical Pig execution flow:
+1. User writes Pig Latin statements in a script or Grunt shell.
+2. Parser checks syntax and builds a logical plan.
+3. Logical optimizer improves the plan where possible.
+4. Compiler converts the plan into a physical execution plan and jobs.
+5. The execution engine runs the plan using the selected mode and underlying processing engine.
+Pig can run in local mode for local-file demonstrations or in Hadoop mode to process data stored in HDFS using the configured Hadoop environment. Exact execution details depend on the Pig version and deployment.
+
+5. GRUNT SHELL
+Grunt is Pig's interactive command-line shell. Pig Latin statements can be entered interactively. A script can also be executed from a file.
+Pig local mode works with the local file system. Hadoop mode uses Hadoop configuration and HDFS. The mode should be selected according to the lab setup.
+
+6. DATA TYPES
+Common Pig data types include:
+• int – 32-bit integer.
+• long – 64-bit integer.
+• float – single-precision floating point.
+• double – double-precision floating point.
+• chararray – string.
+• bytearray – raw bytes / default type when schema is not specified.
+Complex types:
+• tuple – ordered set of fields.
+• bag – collection of tuples.
+• map – key-value collection.
+A schema can be declared while loading data so Pig knows field names and types.
+
+7. LOAD AND PIGSTORAGE
+LOAD reads data into a relation.
+PigStorage is a load/store function for delimited text. A delimiter such as comma or tab can be specified.
+A declared schema should match the actual file's column order and content. If a CSV file has a header row, the header may need to be handled separately depending on the Pig version and loader used. A simple PigStorage load does not automatically guarantee robust handling of every CSV quoting rule.
+
+8. BASIC PIG LATIN OPERATORS
+• LOAD: read data into a relation.
+• DUMP: execute and display a relation on the console.
+• STORE: execute and write a relation to a file system.
+• DESCRIBE: display a relation's schema.
+• ILLUSTRATE: show a sample of how data flows through statements.
+• FILTER: retain tuples satisfying a condition.
+• FOREACH ... GENERATE: project fields or calculate expressions for each tuple.
+• GROUP: group tuples by a key, producing a group field and a bag of records.
+• COGROUP: group two or more relations by matching keys.
+• JOIN: combine relations based on matching fields.
+• DISTINCT: remove duplicate tuples.
+• ORDER: sort a relation.
+• LIMIT: restrict the number of tuples.
+• UNION: combine compatible relations.
+• SPLIT: divide a relation into multiple relations based on conditions.
+
+9. FILTER
+FILTER selects only tuples that satisfy a condition.
+Example concept: retain agriculture records where production is greater than a specified threshold.
+FILTER does not change the fields in each retained tuple; it selects rows.
+
+10. FOREACH AND GENERATE
+FOREACH processes each tuple in a relation. GENERATE specifies the fields or expressions to produce in the output relation.
+It is used for selecting columns, renaming fields, and computing values.
+
+11. GROUP
+GROUP collects tuples with the same key into groups.
+After grouping, Pig provides:
+• group – the grouping key.
+• a bag named after the original relation – the tuples belonging to that key.
+GROUP is useful for state-wise counts, totals, and averages.
+
+12. AGGREGATE FUNCTIONS
+Common aggregate functions include:
+• COUNT(bag) – count tuples in a bag.
+• SUM(expression) – sum numeric values.
+• AVG(expression) – average numeric values.
+• MIN(expression) – minimum value.
+• MAX(expression) – maximum value.
+Aggregations are often performed after GROUP because each group has a bag of related records.
+
+13. ORDER AND LIMIT
+ORDER sorts tuples by one or more fields. ASC means ascending and DESC means descending.
+LIMIT returns at most the specified number of tuples. ORDER followed by LIMIT can be used to obtain a top-N result.
+For grouped top-N analysis, each group's bag may need to be sorted and limited separately.
+
+14. STORE VS DUMP
+DUMP displays a relation's result on the console and forces execution of the relation.
+STORE writes the result to a specified location. In Hadoop mode, the destination is typically in HDFS; in local mode, it is local storage.
+A STORE output directory normally must not already exist.
+
+15. DATASET SCHEMA AND DATA QUALITY
+Before writing analysis statements, identify the dataset's real column names, order, delimiter, and data types. A schema that does not match the CSV can cause incorrect results or conversion errors.
+For example, an agriculture dataset may include state, district, year, season, crop, area, and production. An order dataset may contain order ID, state, and amount. These are examples only; the actual journal dataset schema must be followed.
+Null or malformed numeric values should be considered before applying SUM or AVG.
+
+16. ADVANTAGES
+• Easier to write than low-level MapReduce for many data-flow tasks.
+• Provides built-in relational-style operators.
+• Useful for ETL (extract, transform, load) pipelines.
+• Supports grouping, filtering, sorting, and aggregation.
+• Can process large datasets in the Hadoop ecosystem.
+
+17. LIMITATIONS
+• Pig is a legacy Hadoop ecosystem technology and may not be installed in modern environments.
+• It is not intended as a general-purpose replacement for every database or programming language.
+• Performance depends on execution plans, data layout, and cluster configuration.
+• CSV parsing and schema errors can affect results.
+• Debugging complex scripts may be difficult.
+
+18. PIG VS MAPREDUCE
+Pig Latin expresses data transformations using high-level operators. MapReduce requires the programmer to implement mapper/reducer logic and job configuration. Pig can translate data-flow statements into execution jobs, reducing the amount of low-level code a user writes.
+
+19. APPLICATIONS
+ETL, log processing, cleaning and transforming raw data, summarizing sales or agriculture records, and preparing datasets for further analysis.
+
+20. IMPORTANT VIVA QUESTIONS
+Q: What is Apache Pig?
+A: A high-level platform for analyzing large datasets in the Hadoop ecosystem.
+Q: What is Pig Latin?
+A: Pig's data-flow scripting language.
+Q: What is Grunt?
+A: Pig's interactive shell.
+Q: What does LOAD do?
+A: Reads data into a Pig relation.
+Q: Difference between DUMP and STORE?
+A: DUMP displays output; STORE saves it.
+Q: What does GROUP do?
+A: Groups tuples that have the same key.
+Q: What is FOREACH GENERATE?
+A: It processes each tuple and specifies output fields or expressions.
+Q: What does PigStorage do?
+A: Reads or writes delimited data.

@@ -1,0 +1,242 @@
+EXPERIMENT 7 – DATA ANALYSIS AND VISUALIZATION USING R
+METHOD: ENTER THE DATA DIRECTLY THROUGH R COMMANDS
+(NO CSV FILE IMPORT REQUIRED)
+
+============================================================
+1. AIM
+============================================================
+To create a student performance dataset using R commands, perform
+basic statistical analysis, and display the results using graphs.
+
+============================================================
+2. SOFTWARE REQUIRED
+============================================================
+1. R
+2. RStudio (recommended, but R console can also be used)
+
+============================================================
+3. CHECK INSTALLATION AND VERSION
+============================================================
+Open the Linux terminal and execute:
+
+R --version
+
+If R is installed, its version details will be displayed.
+
+To open RStudio, search for RStudio in the applications menu.
+Alternatively, if the command is available, execute:
+
+rstudio
+
+If RStudio is not installed but R is available, you can perform the
+experiment directly in the R console by executing:
+
+R
+
+IMPORTANT:
+Do not type Linux terminal commands such as R --version inside the
+R console. R commands must be entered after the > prompt.
+
+============================================================
+4. CREATE THE DATASET USING R COMMANDS
+============================================================
+Open RStudio. Select the Console tab and execute the following
+commands one by one. You can also paste the complete code into the
+Console.
+
+# Create a data frame
+students <- data.frame(
+  Student_ID = 1:15,
+  Gender = c("Male", "Female", "Male", "Female", "Male",
+             "Female", "Male", "Female", "Male", "Female",
+             "Male", "Female", "Male", "Female", "Male"),
+  Study_Hours = c(2, 4, 3, 5, 1, 3, 4, 2, 5, 4, 3, 5, 2, 3, 4),
+  Attendance = c(72, 85, 80, 92, 65, 78, 88, 70, 95, 86,
+                 76, 94, 68, 82, 89),
+  Assignment_Score = c(65, 78, 72, 88, 55, 75, 82, 68, 91, 85,
+                       70, 90, 60, 77, 84),
+  Internal_Marks = c(60, 82, 70, 90, 52, 73, 80, 64, 92, 84,
+                     68, 91, 58, 75, 81),
+  Final_Marks = c(62, 84, 73, 91, 50, 76, 83, 65, 94, 86,
+                  71, 93, 59, 78, 85)
+)
+
+# Display the complete dataset
+print(students)
+
+============================================================
+5. UNDERSTAND THE DATA
+============================================================
+
+# Display the first six records
+head(students)
+
+# Display the last six records
+tail(students)
+
+# Display the structure and data types
+str(students)
+
+# Display statistical summary
+summary(students)
+
+# Display number of rows and columns
+dim(students)
+
+# Display column names
+names(students)
+
+============================================================
+6. PERFORM STATISTICAL ANALYSIS
+============================================================
+
+# Calculate mean final marks
+mean(students$Final_Marks)
+
+# Calculate median final marks
+median(students$Final_Marks)
+
+# Calculate standard deviation of final marks
+sd(students$Final_Marks)
+
+# Find minimum final marks
+min(students$Final_Marks)
+
+# Find maximum final marks
+max(students$Final_Marks)
+
+# Calculate average study hours
+mean(students$Study_Hours)
+
+# Calculate average attendance
+mean(students$Attendance)
+
+# Calculate average assignment score
+mean(students$Assignment_Score)
+
+# Count male and female students
+table(students$Gender)
+
+# Calculate correlation between study hours and final marks
+cor(students$Study_Hours, students$Final_Marks)
+
+# Calculate correlation between attendance and final marks
+cor(students$Attendance, students$Final_Marks)
+
+============================================================
+7. DATA FILTERING AND SORTING
+============================================================
+
+# Display students who scored more than 80 marks
+students[students$Final_Marks > 80, ]
+
+# Display students with attendance greater than or equal to 80
+students[students$Attendance >= 80, ]
+
+# Display students who studied for at least 4 hours
+students[students$Study_Hours >= 4, ]
+
+# Sort students by final marks in descending order
+students[order(-students$Final_Marks), ]
+
+============================================================
+8. DATA VISUALIZATION
+============================================================
+
+# A. BAR PLOT – Number of students in each gender category
+gender_count <- table(students$Gender)
+barplot(gender_count,
+        main = "Number of Students by Gender",
+        xlab = "Gender",
+        ylab = "Number of Students",
+        col = "skyblue")
+
+# B. HISTOGRAM – Distribution of final marks
+hist(students$Final_Marks,
+     main = "Distribution of Final Marks",
+     xlab = "Final Marks",
+     ylab = "Frequency",
+     col = "lightgreen",
+     border = "black")
+
+# C. SCATTER PLOT – Study hours versus final marks
+plot(students$Study_Hours, students$Final_Marks,
+     main = "Study Hours vs Final Marks",
+     xlab = "Study Hours",
+     ylab = "Final Marks",
+     pch = 19,
+     col = "blue")
+
+# D. SCATTER PLOT – Attendance versus final marks
+plot(students$Attendance, students$Final_Marks,
+     main = "Attendance vs Final Marks",
+     xlab = "Attendance",
+     ylab = "Final Marks",
+     pch = 19,
+     col = "red")
+
+# E. PIE CHART – Gender distribution
+gender_count <- table(students$Gender)
+pie(gender_count,
+    main = "Gender Distribution",
+    col = c("lightblue", "pink"))
+
+============================================================
+9. OPTIONAL: SAVE THE DATASET AS A CSV FILE
+============================================================
+This is optional. The experiment above does not require CSV import.
+
+write.csv(students, "student_performance.csv", row.names = FALSE)
+
+To check the current working directory:
+getwd()
+
+To change the working directory (replace the path with your own):
+setwd("/home/your_username/Documents")
+
+============================================================
+10. HOW TO EXECUTE IN THE PRACTICAL EXAM
+============================================================
+1. Open RStudio.
+2. Click the Console tab.
+3. Enter the data frame creation code from Section 4.
+4. Execute print(students) to confirm that the dataset is created.
+5. Execute the commands in Sections 5 and 6 for data inspection
+   and statistical analysis.
+6. Execute the commands in Section 7 for filtering and sorting.
+7. Execute the commands in Section 8 one by one to generate graphs.
+8. Observe the graph in the Plots pane in RStudio.
+9. If using the R terminal instead of RStudio, plots may open in
+   a separate graphics window depending on the Linux setup.
+
+============================================================
+11. COMMON ERRORS AND SOLUTIONS
+============================================================
+ERROR: object 'students' not found
+SOLUTION: Run the complete data frame creation code in Section 4
+before running analysis commands.
+
+ERROR: unexpected symbol or unexpected ')'
+SOLUTION: Check commas, quotation marks and opening/closing
+parentheses. Run the data frame code again carefully.
+
+ERROR: could not find function
+SOLUTION: Check the spelling of the function. The functions used
+in this experiment (mean, median, sd, min, max, table, cor,
+barplot, hist, plot and pie) are available in base R.
+
+ERROR: plots are not visible in RStudio
+SOLUTION: Select the Plots pane. Run the plotting command again.
+
+IMPORTANT:
+Run commands in order. Create the students data frame first.
+Do not run the analysis or plotting commands before creating it.
+
+============================================================
+12. RESULT
+============================================================
+The student performance dataset was created directly using R
+commands. Statistical measures such as mean, median, standard
+deviation, minimum, maximum and correlation were calculated.
+The data was filtered and sorted, and visualizations were created
+using bar plot, histogram, scatter plot and pie chart.

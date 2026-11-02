@@ -1,0 +1,116 @@
+BDA PRACTICAL – EXPERIMENT 1
+HADOOP INSTALLATION IN PSEUDO-DISTRIBUTED MODE AND HDFS COMMANDS
+THEORY NOTES
+
+1. AIM
+To understand Apache Hadoop, configure it in pseudo-distributed mode, and perform basic file-system operations using HDFS commands.
+
+2. WHAT IS BIG DATA?
+Big Data refers to datasets whose size, speed of generation, and variety make them difficult to store, manage, and process efficiently using traditional systems alone.
+The commonly discussed characteristics are:
+• Volume – very large quantities of data.
+• Velocity – data is generated and arrives quickly.
+• Variety – data may be structured, semi-structured, or unstructured.
+• Veracity – data quality and reliability.
+• Value – useful information that can be obtained from data.
+
+3. WHAT IS APACHE HADOOP?
+Apache Hadoop is an open-source framework for distributed storage and distributed processing of large datasets using clusters of computers. It is designed to scale from one machine to many machines.
+Hadoop's core modules are:
+• Hadoop Common – shared libraries and utilities required by other modules.
+• HDFS – Hadoop Distributed File System, used for distributed storage.
+• YARN – manages cluster resources and schedules applications.
+• MapReduce – programming model and processing framework for parallel batch processing.
+
+4. HADOOP OPERATING MODES
+• Standalone/local mode: Hadoop runs as a single Java process and uses the local file system. It is useful for simple testing.
+• Pseudo-distributed mode: Hadoop daemons run as separate processes on one computer. HDFS and YARN can be tested without a multi-machine cluster.
+• Fully distributed mode: Hadoop services run across multiple computers connected as a cluster. This is used for larger deployments.
+
+5. WHAT IS HDFS?
+HDFS stands for Hadoop Distributed File System. It is designed to store large files across multiple machines. A file is divided into blocks, and the blocks are stored on DataNodes. Replication can keep multiple copies of blocks to improve availability and fault tolerance.
+HDFS is optimized for high-throughput access to large files. It is generally more suitable for large sequential reads and writes than for many tiny files or frequent random updates.
+
+6. HDFS ARCHITECTURE
+HDFS follows a master-worker architecture.
+• NameNode: The master service. It manages the file-system namespace and metadata, such as directories, file names, permissions, and the mapping of files to blocks and block locations. It does not normally store the user file contents.
+• DataNode: Worker services that store the actual HDFS data blocks. They serve read and write requests and report block information to the NameNode.
+• Secondary NameNode / Checkpoint Node: Periodically helps create checkpoints by combining namespace image and edit information. It is not simply a live backup NameNode.
+• Client: Contacts the NameNode for metadata and communicates with DataNodes to read or write file blocks.
+
+7. BLOCKS AND REPLICATION
+A file stored in HDFS is split into blocks. The block size is configurable and is typically much larger than the block size used by ordinary local file systems.
+Replication means keeping multiple copies of each block on different DataNodes. If a DataNode fails, another replica can be used. The common default replication factor in many Hadoop configurations is 3, but a single-node practical setup often uses 1 because only one DataNode is available.
+A replication factor of 1 is suitable for a single-machine demonstration but does not provide protection against loss of that machine.
+
+8. YARN AND MAPREDUCE
+YARN stands for Yet Another Resource Negotiator. It manages cluster resources and application execution.
+• ResourceManager: Cluster-level resource manager and scheduler.
+• NodeManager: Runs on each worker node and manages containers and local resources.
+• ApplicationMaster: Coordinates the execution of one application.
+MapReduce divides processing into map and reduce tasks. YARN can manage the resources used by MapReduce jobs.
+
+9. PSEUDO-DISTRIBUTED CONFIGURATION FILES
+The main configuration files are normally located in $HADOOP_HOME/etc/hadoop/.
+• core-site.xml: General Hadoop settings, including fs.defaultFS, which identifies the default file-system URI.
+• hdfs-site.xml: HDFS settings such as replication and NameNode/DataNode storage directories.
+• mapred-site.xml: MapReduce execution settings, for example selecting YARN as the framework.
+• yarn-site.xml: YARN settings, including services required by MapReduce.
+Environment variables such as JAVA_HOME and HADOOP_HOME help Hadoop locate Java and its own installation.
+
+10. WHY JAVA AND SSH ARE USED
+Hadoop is implemented primarily in Java, so a compatible Java runtime is required. Java development tools may also be required when compiling MapReduce programs.
+SSH is commonly used by Hadoop start/stop scripts to communicate with services, including on localhost in a pseudo-distributed setup. Passwordless localhost SSH is often configured for convenience.
+
+11. WHAT DOES FORMATTING THE NAMENODE MEAN?
+Formatting initializes the NameNode's file-system metadata storage and creates a new namespace. It is generally performed during the initial setup. Reformatting an existing NameNode can make previously stored HDFS data inaccessible because the metadata describing that data is replaced. Do not format repeatedly on a working cluster.
+
+12. HDFS COMMAND CONCEPTS
+HDFS shell commands commonly use the form: hdfs dfs -command arguments.
+• -ls: list files and directories.
+• -mkdir: create a directory.
+• -put or -copyFromLocal: copy a local file into HDFS.
+• -get or -copyToLocal: copy an HDFS file to the local file system.
+• -cat: display file contents.
+• -cp: copy within HDFS.
+• -mv: move or rename within HDFS.
+• -rm: remove a file.
+• -rm -r: remove a directory recursively.
+• -du: show space usage.
+A local path and an HDFS path are different. Commands such as -put read from local storage and write to HDFS; -get does the reverse.
+
+13. ADVANTAGES OF HADOOP/HDFS
+• Scales across multiple machines.
+• Stores large datasets using distributed blocks.
+• Replication supports fault tolerance.
+• Uses commodity hardware.
+• Supports parallel processing through its ecosystem.
+• Open-source technology with a broad ecosystem.
+
+14. LIMITATIONS
+• Not ideal for low-latency transactional workloads.
+• Many small files create metadata overhead.
+• A single NameNode design requires appropriate high-availability planning for production.
+• Cluster setup, tuning, security, and operations can be complex.
+• HDFS is not intended for frequent in-place modification of arbitrary parts of files.
+
+15. APPLICATIONS
+Log analysis, large-scale data warehousing, batch analytics, clickstream processing, data-lake storage, and processing large historical datasets.
+
+16. IMPORTANT VIVA QUESTIONS
+Q: What is Hadoop?
+A: An open-source framework for distributed storage and processing of large datasets.
+Q: What is HDFS?
+A: Hadoop's distributed file system.
+Q: What is the role of the NameNode?
+A: It manages HDFS metadata and the file-system namespace.
+Q: What is the role of a DataNode?
+A: It stores actual HDFS data blocks.
+Q: What is replication?
+A: Keeping multiple copies of data blocks for availability and fault tolerance.
+Q: What is pseudo-distributed mode?
+A: Hadoop services run as separate processes on one computer.
+Q: What is YARN?
+A: Hadoop's resource-management and scheduling layer.
+Q: Why should NameNode formatting not be repeated?
+A: It initializes/replaces namespace metadata and can make existing HDFS data inaccessible.

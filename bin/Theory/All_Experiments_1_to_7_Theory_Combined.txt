@@ -1,0 +1,978 @@
+BDA PRACTICAL – EXPERIMENT 1
+HADOOP INSTALLATION IN PSEUDO-DISTRIBUTED MODE AND HDFS COMMANDS
+THEORY NOTES
+
+1. AIM
+To understand Apache Hadoop, configure it in pseudo-distributed mode, and perform basic file-system operations using HDFS commands.
+
+2. WHAT IS BIG DATA?
+Big Data refers to datasets whose size, speed of generation, and variety make them difficult to store, manage, and process efficiently using traditional systems alone.
+The commonly discussed characteristics are:
+• Volume – very large quantities of data.
+• Velocity – data is generated and arrives quickly.
+• Variety – data may be structured, semi-structured, or unstructured.
+• Veracity – data quality and reliability.
+• Value – useful information that can be obtained from data.
+
+3. WHAT IS APACHE HADOOP?
+Apache Hadoop is an open-source framework for distributed storage and distributed processing of large datasets using clusters of computers. It is designed to scale from one machine to many machines.
+Hadoop's core modules are:
+• Hadoop Common – shared libraries and utilities required by other modules.
+• HDFS – Hadoop Distributed File System, used for distributed storage.
+• YARN – manages cluster resources and schedules applications.
+• MapReduce – programming model and processing framework for parallel batch processing.
+
+4. HADOOP OPERATING MODES
+• Standalone/local mode: Hadoop runs as a single Java process and uses the local file system. It is useful for simple testing.
+• Pseudo-distributed mode: Hadoop daemons run as separate processes on one computer. HDFS and YARN can be tested without a multi-machine cluster.
+• Fully distributed mode: Hadoop services run across multiple computers connected as a cluster. This is used for larger deployments.
+
+5. WHAT IS HDFS?
+HDFS stands for Hadoop Distributed File System. It is designed to store large files across multiple machines. A file is divided into blocks, and the blocks are stored on DataNodes. Replication can keep multiple copies of blocks to improve availability and fault tolerance.
+HDFS is optimized for high-throughput access to large files. It is generally more suitable for large sequential reads and writes than for many tiny files or frequent random updates.
+
+6. HDFS ARCHITECTURE
+HDFS follows a master-worker architecture.
+• NameNode: The master service. It manages the file-system namespace and metadata, such as directories, file names, permissions, and the mapping of files to blocks and block locations. It does not normally store the user file contents.
+• DataNode: Worker services that store the actual HDFS data blocks. They serve read and write requests and report block information to the NameNode.
+• Secondary NameNode / Checkpoint Node: Periodically helps create checkpoints by combining namespace image and edit information. It is not simply a live backup NameNode.
+• Client: Contacts the NameNode for metadata and communicates with DataNodes to read or write file blocks.
+
+7. BLOCKS AND REPLICATION
+A file stored in HDFS is split into blocks. The block size is configurable and is typically much larger than the block size used by ordinary local file systems.
+Replication means keeping multiple copies of each block on different DataNodes. If a DataNode fails, another replica can be used. The common default replication factor in many Hadoop configurations is 3, but a single-node practical setup often uses 1 because only one DataNode is available.
+A replication factor of 1 is suitable for a single-machine demonstration but does not provide protection against loss of that machine.
+
+8. YARN AND MAPREDUCE
+YARN stands for Yet Another Resource Negotiator. It manages cluster resources and application execution.
+• ResourceManager: Cluster-level resource manager and scheduler.
+• NodeManager: Runs on each worker node and manages containers and local resources.
+• ApplicationMaster: Coordinates the execution of one application.
+MapReduce divides processing into map and reduce tasks. YARN can manage the resources used by MapReduce jobs.
+
+9. PSEUDO-DISTRIBUTED CONFIGURATION FILES
+The main configuration files are normally located in $HADOOP_HOME/etc/hadoop/.
+• core-site.xml: General Hadoop settings, including fs.defaultFS, which identifies the default file-system URI.
+• hdfs-site.xml: HDFS settings such as replication and NameNode/DataNode storage directories.
+• mapred-site.xml: MapReduce execution settings, for example selecting YARN as the framework.
+• yarn-site.xml: YARN settings, including services required by MapReduce.
+Environment variables such as JAVA_HOME and HADOOP_HOME help Hadoop locate Java and its own installation.
+
+10. WHY JAVA AND SSH ARE USED
+Hadoop is implemented primarily in Java, so a compatible Java runtime is required. Java development tools may also be required when compiling MapReduce programs.
+SSH is commonly used by Hadoop start/stop scripts to communicate with services, including on localhost in a pseudo-distributed setup. Passwordless localhost SSH is often configured for convenience.
+
+11. WHAT DOES FORMATTING THE NAMENODE MEAN?
+Formatting initializes the NameNode's file-system metadata storage and creates a new namespace. It is generally performed during the initial setup. Reformatting an existing NameNode can make previously stored HDFS data inaccessible because the metadata describing that data is replaced. Do not format repeatedly on a working cluster.
+
+12. HDFS COMMAND CONCEPTS
+HDFS shell commands commonly use the form: hdfs dfs -command arguments.
+• -ls: list files and directories.
+• -mkdir: create a directory.
+• -put or -copyFromLocal: copy a local file into HDFS.
+• -get or -copyToLocal: copy an HDFS file to the local file system.
+• -cat: display file contents.
+• -cp: copy within HDFS.
+• -mv: move or rename within HDFS.
+• -rm: remove a file.
+• -rm -r: remove a directory recursively.
+• -du: show space usage.
+A local path and an HDFS path are different. Commands such as -put read from local storage and write to HDFS; -get does the reverse.
+
+13. ADVANTAGES OF HADOOP/HDFS
+• Scales across multiple machines.
+• Stores large datasets using distributed blocks.
+• Replication supports fault tolerance.
+• Uses commodity hardware.
+• Supports parallel processing through its ecosystem.
+• Open-source technology with a broad ecosystem.
+
+14. LIMITATIONS
+• Not ideal for low-latency transactional workloads.
+• Many small files create metadata overhead.
+• A single NameNode design requires appropriate high-availability planning for production.
+• Cluster setup, tuning, security, and operations can be complex.
+• HDFS is not intended for frequent in-place modification of arbitrary parts of files.
+
+15. APPLICATIONS
+Log analysis, large-scale data warehousing, batch analytics, clickstream processing, data-lake storage, and processing large historical datasets.
+
+16. IMPORTANT VIVA QUESTIONS
+Q: What is Hadoop?
+A: An open-source framework for distributed storage and processing of large datasets.
+Q: What is HDFS?
+A: Hadoop's distributed file system.
+Q: What is the role of the NameNode?
+A: It manages HDFS metadata and the file-system namespace.
+Q: What is the role of a DataNode?
+A: It stores actual HDFS data blocks.
+Q: What is replication?
+A: Keeping multiple copies of data blocks for availability and fault tolerance.
+Q: What is pseudo-distributed mode?
+A: Hadoop services run as separate processes on one computer.
+Q: What is YARN?
+A: Hadoop's resource-management and scheduling layer.
+Q: Why should NameNode formatting not be repeated?
+A: It initializes/replaces namespace metadata and can make existing HDFS data inaccessible.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 2
+DATA TRANSFER BETWEEN MYSQL AND HADOOP USING APACHE SQOOP
+THEORY NOTES
+
+1. AIM
+To understand Apache Sqoop and transfer bulk data between a relational database such as MySQL and the Hadoop ecosystem.
+
+2. WHAT IS A RELATIONAL DATABASE?
+A relational database stores data in tables. A table consists of rows and columns. Relationships can be represented using keys. MySQL is a relational database management system (RDBMS) that uses SQL to create, retrieve, update, and delete data.
+
+3. WHAT IS APACHE SQOOP?
+Apache Sqoop is a tool developed to transfer bulk data between relational databases and Hadoop storage or processing systems. The name Sqoop comes from SQL-to-Hadoop.
+Sqoop is useful when an organization has data in a traditional relational database and wants to bring it into Hadoop for large-scale analysis, or when processed results need to be sent back to a relational database.
+Sqoop is a legacy technology and is not included in every modern Hadoop distribution. The installed Sqoop, Hadoop, Java, database, and JDBC-driver versions must be compatible.
+
+4. WHY SQOOP IS USED
+• Transfers large volumes of structured data.
+• Moves data from relational databases into HDFS or Hive.
+• Can transfer processed data from Hadoop back into a database.
+• Supports selecting tables, columns, and rows.
+• Can use parallel map tasks for bulk transfer.
+• Reduces the need to write a custom transfer program for common database imports and exports.
+
+5. SQOOP ARCHITECTURE / WORKING
+A typical Sqoop import works as follows:
+1. The user runs a Sqoop command with a JDBC connection and table/query details.
+2. Sqoop connects to the relational database using a JDBC driver.
+3. Sqoop obtains table metadata and determines how to split the data.
+4. Sqoop creates one or more map tasks.
+5. Map tasks read portions of the table from the database.
+6. The records are written to the chosen Hadoop destination, such as HDFS.
+For export, Sqoop reads records from HDFS and uses JDBC to insert them into the destination database table.
+
+6. IMPORT AND EXPORT
+IMPORT: Database -> Hadoop.
+Import transfers rows from a relational database table or query into HDFS, Hive, or another supported Hadoop destination.
+EXPORT: Hadoop -> Database.
+Export reads data from a Hadoop location and inserts it into a relational database table.
+Remember the direction:
+• Import: MySQL to HDFS.
+• Export: HDFS to MySQL.
+
+7. IMPORTANT SQOOP IMPORT OPTIONS
+• --connect: JDBC connection string identifying the database.
+• --username: database login name.
+• -P: asks for the password interactively.
+• --password: supplies a password on the command line; this can expose credentials in shell history or process listings, so interactive prompting or secure configuration is preferable.
+• --table: table to import.
+• --target-dir: HDFS destination directory.
+• --columns: comma-separated list of selected columns.
+• --where: SQL condition used to filter rows.
+• --query: custom SQL query; Sqoop query imports normally require the $CONDITIONS placeholder.
+• --m or --num-mappers: number of mapper tasks used for parallelism.
+• --split-by: column used to divide records among mappers for a query import.
+• --compress: enables compression of output.
+A mapper count of 1 is convenient for small practical demonstrations and avoids partitioning complexity.
+
+8. JDBC
+JDBC stands for Java Database Connectivity. It is a Java API that allows Java programs and tools such as Sqoop to communicate with relational databases. The correct database-specific JDBC driver must be available to Sqoop.
+
+9. IMPORT DATA FORMAT
+Sqoop commonly writes imported records as delimited text files in HDFS unless a different supported output format is selected. The delimiter matters during export. For example, if an HDFS file is tab-delimited but export is configured to read commas, fields may be interpreted incorrectly.
+The destination table's column order, data types, null handling, and delimiter must be compatible with the exported data.
+
+10. PARALLELISM
+Sqoop can use multiple mapper tasks to read different portions of a table. This can improve transfer speed for large tables, but the split column must be suitable and the database must be able to handle parallel reads.
+A single mapper is often selected in introductory practicals. It is simpler but does not demonstrate parallel transfer.
+
+11. COMMON REQUIREMENTS
+• MySQL server should be running.
+• The database and source/destination tables should exist.
+• Correct username and password are needed.
+• JDBC driver must be available.
+• Hadoop configuration and HDFS should be working for HDFS transfers.
+• Sqoop must be installed and compatible with the environment.
+• HDFS destination directory should not already exist for a normal import unless overwrite/append behavior is intentionally configured.
+
+12. ADVANTAGES
+• Convenient bulk data transfer.
+• Supports table and query-based imports.
+• Can use parallel mappers.
+• Supports both import and export.
+• Connects traditional relational databases with Hadoop tools.
+
+13. LIMITATIONS
+• Primarily designed for relational/bulk transfer, not continuous event streaming.
+• Depends on JDBC drivers and compatibility.
+• Parallel imports require an appropriate split column and can add load to the database.
+• Legacy Sqoop versions may be difficult to run with newer Java/Hadoop environments.
+• It is not a replacement for stream-ingestion systems such as Kafka or Flume.
+
+14. SQOOP VS FLUME
+Sqoop is commonly used for bulk transfer between relational databases and Hadoop. Flume is designed for collecting and moving event/log data, often continuously, into storage systems.
+
+15. APPLICATIONS
+Migrating customer, sales, inventory, banking, and transactional data from RDBMS platforms into HDFS for historical analysis; exporting summarized analytical results back to database tables.
+
+16. IMPORTANT VIVA QUESTIONS
+Q: What is Sqoop?
+A: A tool for bulk data transfer between relational databases and Hadoop.
+Q: What is import?
+A: Moving data from a database into Hadoop.
+Q: What is export?
+A: Moving data from Hadoop into a database.
+Q: What is JDBC?
+A: Java Database Connectivity, an API for connecting Java applications to databases.
+Q: Why is a JDBC driver needed?
+A: It enables the Java-based tool to communicate with the particular database.
+Q: What does --m 1 mean?
+A: Use one mapper for the transfer.
+Q: What is --where used for?
+A: To filter imported rows using a condition.
+Q: What is the difference between Sqoop and Flume?
+A: Sqoop handles bulk relational database transfers; Flume is commonly used for log/event ingestion.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 3
+MAPREDUCE PROGRAMS: WORD COUNT, TOTAL WORD COUNT AND MATRIX MULTIPLICATION
+THEORY NOTES
+
+1. AIM
+To understand the MapReduce programming model and apply it to word-frequency counting, total word counting, and matrix multiplication.
+
+2. WHAT IS MAPREDUCE?
+MapReduce is a programming model and processing approach for processing large datasets in parallel across a cluster. It divides a job into smaller tasks, processes data close to where it is stored when possible, and combines intermediate results.
+The two main user-defined processing functions are Map and Reduce. Between them, the framework performs partitioning, shuffle, and sorting.
+
+3. KEY-VALUE PAIRS
+MapReduce represents intermediate data as key-value pairs.
+A key identifies a group or category, and the value contains information associated with that key.
+Example:
+Input text: "cat dog cat"
+Mapper output:
+(cat, 1)
+(dog, 1)
+(cat, 1)
+After shuffle and grouping:
+(cat, [1, 1])
+(dog, [1])
+Reducer output:
+(cat, 2)
+(dog, 1)
+
+4. STAGES OF MAPREDUCE
+A. Input splitting and record reading:
+The input is divided into logical input splits. InputFormat and RecordReader convert input data into records for the mapper.
+B. Mapper:
+The mapper processes each input record and emits intermediate key-value pairs.
+C. Combiner (optional):
+A combiner performs local aggregation of mapper output. It can reduce the amount of data sent across the network. A combiner may run zero, one, or multiple times, so the operation must be safe for that behavior.
+D. Partitioner:
+The partitioner decides which reducer receives a particular key. All values for the same key must go to the same reducer.
+E. Shuffle and sort:
+Intermediate mapper output is transferred, grouped by key, and sorted as required by the framework.
+F. Reducer:
+The reducer receives a key and its collection of values, performs aggregation or other processing, and emits final key-value pairs.
+G. Output:
+OutputFormat writes reducer results to the configured output location, commonly HDFS.
+
+5. HADOOP WRITABLE DATA TYPES
+Hadoop uses Writable types for efficient serialization:
+• Text – string-like data.
+• IntWritable – integer values.
+• LongWritable – long integer values.
+• DoubleWritable – double-precision numeric values.
+• BooleanWritable – boolean values.
+These are used instead of ordinary Java types in many MapReduce input/output interfaces.
+
+6. WORD COUNT PROGRAM
+Purpose: Count how many times each word appears in an input text.
+Working:
+1. Input text is read line by line.
+2. Mapper tokenizes each line into words.
+3. For each word, mapper emits (word, 1).
+4. Shuffle and sort group all identical words together.
+5. Reducer adds the values for each word.
+6. Output contains each word and its frequency.
+Example input:
+apple mango apple
+mango banana
+Output:
+apple 3
+banana 2
+mango 2
+Word normalization decisions matter. Converting to lowercase treats Apple and apple as the same word. Punctuation removal may also be required depending on the expected output. A simple whitespace tokenizer does not perform advanced linguistic tokenization.
+
+7. TOTAL WORD COUNT PROGRAM
+Purpose: Calculate the total number of tokens/words in the input rather than the frequency of each distinct word.
+Working:
+1. Mapper reads a line.
+2. It counts the tokens in that line.
+3. It emits a common key, such as "Total Words", with the line's count.
+4. Reducer adds all line counts.
+5. Final output contains one total.
+Example:
+"hello world" has 2 tokens.
+"big data analytics" has 3 tokens.
+Total = 5.
+The definition of a word depends on tokenization. A StringTokenizer-style approach counts whitespace-separated tokens and may treat punctuation as part of a token.
+
+8. MATRIX MULTIPLICATION
+For matrices A and B, multiplication is possible when the number of columns in A equals the number of rows in B.
+If A has dimensions m x n and B has dimensions n x p, the result C has dimensions m x p.
+The formula for each output cell is:
+C[i,j] = sum over k of A[i,k] * B[k,j].
+Example:
+A = [ [1, 2], [3, 4] ]
+B = [ [5, 6], [7, 8] ]
+C = [ [19, 22], [43, 50] ]
+Calculation:
+C[0,0] = 1*5 + 2*7 = 19
+C[0,1] = 1*6 + 2*8 = 22
+C[1,0] = 3*5 + 4*7 = 43
+C[1,1] = 3*6 + 4*8 = 50
+MapReduce idea:
+• Mapper reads an element of A or B.
+• It emits that element for every output cell that needs it, using the output cell coordinate (i,j) as key.
+• Reducer receives all required A and B values for one output cell.
+• It multiplies matching inner-dimension values and sums the products.
+The dimensions and input format must be known. A practical implementation must ensure that all required matrix elements are present and correctly tagged.
+
+9. DRIVER CLASS
+The driver configures and launches the MapReduce job. It specifies:
+• Job name and configuration.
+• Mapper and reducer classes.
+• Optional combiner.
+• Map output key/value types.
+• Final output key/value types.
+• Input and output paths.
+• Any job-specific configuration.
+It waits for completion and returns an exit status.
+
+10. IMPORTANT HADOOP JOB RULES
+• Input path must exist.
+• Output path normally must not already exist.
+• The Java source filename must match its public class name.
+• Hadoop libraries must be available on the compilation classpath.
+• The compiled classes must be packaged into a JAR.
+• Input and output key/value types must match the mapper/reducer declarations.
+• For a multi-reducer job, records with the same key are sent to the same reducer.
+
+11. COMBINER
+A combiner is a local mini-reducer that can reduce intermediate data volume before shuffle. In Word Count, summing local counts is safe because addition is associative and commutative. A combiner is not guaranteed to run, so correctness must not depend on it running.
+
+12. ADVANTAGES
+• Parallel processing of large datasets.
+• Scales across a cluster.
+• Framework handles task scheduling and failures.
+• Works naturally with key-value aggregation.
+• Can process data stored in HDFS.
+
+13. LIMITATIONS
+• Traditional MapReduce is batch-oriented and can have higher latency than in-memory processing systems.
+• Jobs that require many iterative passes can be inefficient.
+• Data movement during shuffle can be expensive.
+• Writing MapReduce in Java can be verbose for simple tasks.
+
+14. APPLICATIONS
+Word-frequency analysis, log aggregation, indexing, large-scale counting, data transformation, and parallel numerical workloads such as matrix operations.
+
+15. IMPORTANT VIVA QUESTIONS
+Q: What is MapReduce?
+A: A programming model for parallel processing of large datasets.
+Q: What does Mapper do?
+A: Converts input records into intermediate key-value pairs.
+Q: What does Reducer do?
+A: Processes grouped values for each key and produces final results.
+Q: What is shuffle and sort?
+A: The framework transfers mapper output, groups values by key, and sorts keys before reduction.
+Q: What is a combiner?
+A: An optional local aggregation step that reduces intermediate data.
+Q: Why use Writable classes?
+A: Hadoop uses them for serialization and data transfer.
+Q: What is the output of Word Count?
+A: Each distinct word and its frequency.
+Q: What is the output of Total Word Count?
+A: One overall token count.
+Q: When can two matrices be multiplied?
+A: When columns of the first matrix equal rows of the second matrix.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 4
+NOSQL DATABASE OPERATIONS USING MONGODB
+THEORY NOTES
+
+1. AIM
+To understand NoSQL databases and perform database, collection, document, query, update, and delete operations using MongoDB.
+
+2. WHAT IS A DATABASE?
+A database is an organized collection of data. A database management system (DBMS) provides facilities to store, retrieve, update, and manage data.
+
+3. WHAT IS NOSQL?
+NoSQL means "Not Only SQL". It refers to database systems that use data models other than, or in addition to, the traditional relational table model. Many NoSQL systems are designed for flexible schemas, horizontal scaling, or particular access patterns.
+Common NoSQL categories:
+• Document databases – store records as documents, e.g. MongoDB.
+• Key-value databases – store key/value pairs.
+• Wide-column databases – organize data by column families.
+• Graph databases – represent entities and relationships as graphs.
+
+4. WHAT IS MONGODB?
+MongoDB is a document-oriented NoSQL database. It stores records as BSON documents. BSON is a binary representation of JSON-like documents and supports additional data types.
+A document contains fields and values. Documents in a collection do not always need exactly the same fields, although applications often enforce a consistent structure.
+
+5. SQL AND MONGODB TERMINOLOGY
+Relational database -> MongoDB:
+• Database -> Database.
+• Table -> Collection.
+• Row -> Document.
+• Column -> Field.
+• Primary key -> _id field.
+MongoDB automatically creates an _id value if one is not supplied. The _id value must be unique within a collection.
+
+6. DATABASE, COLLECTION, DOCUMENT
+Database: A container for collections.
+Collection: A group of documents, broadly comparable to a relational table.
+Document: A set of field/value pairs, broadly comparable to a row.
+Example document:
+{
+  "_id": 1,
+  "name": "Amit",
+  "age": 25,
+  "disease": "Fever",
+  "fees": 500
+}
+The fields in a document can include strings, numbers, dates, arrays, nested documents, and other supported BSON types.
+
+7. MONGOSH
+mongosh is the MongoDB Shell. It is an interactive command-line environment used to connect to MongoDB and execute database commands and JavaScript expressions.
+Commands such as use, db.createCollection(), insertOne(), find(), updateOne(), and deleteOne() are entered in mongosh, not in the ordinary Linux shell.
+
+8. CRUD OPERATIONS
+CRUD stands for:
+• Create – insert new documents.
+• Read – retrieve documents.
+• Update – modify existing documents.
+• Delete – remove documents.
+Examples:
+Create: db.Patients.insertOne({name: "Amit"})
+Read: db.Patients.find()
+Update: db.Patients.updateOne({name: "Amit"}, {$set: {fees: 600}})
+Delete: db.Patients.deleteOne({name: "Amit"})
+
+9. INSERT OPERATIONS
+• insertOne(document) inserts one document.
+• insertMany([documents]) inserts multiple documents.
+If an explicitly supplied _id duplicates an existing _id, MongoDB reports a duplicate-key error.
+
+10. READ / QUERY OPERATIONS
+• find() returns documents matching a filter.
+• findOne() returns one matching document.
+• An empty filter {} matches all documents.
+Comparison operators:
+• $gt – greater than.
+• $lt – less than.
+• $gte – greater than or equal.
+• $lte – less than or equal.
+• $ne – not equal.
+• $eq – equal.
+Logical operators:
+• $and – all specified conditions must be true.
+• $or – at least one specified condition must be true.
+Projection controls which fields are returned. A value of 1 includes a field and 0 excludes it, with special handling for _id. Inclusion and exclusion generally cannot be mixed in one projection except for excluding _id from an inclusion projection.
+sort({field: 1}) sorts ascending; sort({field: -1}) sorts descending.
+
+11. UPDATE OPERATIONS
+• updateOne(filter, update) modifies one matching document.
+• updateMany(filter, update) modifies all matching documents.
+• $set assigns a field a value.
+• $inc increases or decreases a numeric field.
+• $unset removes a field.
+Update operators should be used to specify how a document changes.
+
+12. DELETE OPERATIONS
+• deleteOne(filter) removes one matching document.
+• deleteMany(filter) removes all matching documents.
+Use a careful filter. An empty filter in deleteMany({}) matches every document in the collection and can delete all its data.
+
+13. COUNT AND COLLECTION COMMANDS
+• countDocuments(filter) returns the number of matching documents.
+• db.createCollection(name) explicitly creates a collection.
+• show dbs lists databases with stored data.
+• show collections lists collections in the current database.
+• db.collection.find().pretty() may format output for easier reading in shell versions that support it.
+
+14. MONGODB VS RELATIONAL DATABASES
+Relational databases commonly use tables, predefined schemas, joins, and SQL. MongoDB stores BSON documents in collections and supports flexible document structures and nested data.
+The choice depends on the application, data relationships, consistency needs, query patterns, and operational requirements. NoSQL is not automatically better than SQL for every workload.
+
+15. ADVANTAGES
+• Flexible document structure.
+• Supports nested documents and arrays.
+• Query and indexing capabilities.
+• Can scale horizontally using sharding.
+• Useful for application data with document-shaped records.
+
+16. LIMITATIONS / CONSIDERATIONS
+• Data modeling requires attention to document size and access patterns.
+• Flexible schemas can lead to inconsistent data if validation is not applied.
+• Relationships and complex joins may require careful modeling or aggregation.
+• Indexes improve reads but consume storage and can slow writes.
+• Backups, security, and replication must be configured correctly.
+
+17. APPLICATIONS
+Content management, product catalogs, user profiles, event data, application backends, inventory, and data with flexible or nested structures.
+
+18. IMPORTANT VIVA QUESTIONS
+Q: What is MongoDB?
+A: A document-oriented NoSQL database.
+Q: What is BSON?
+A: MongoDB's binary document representation based on JSON-like structures.
+Q: What is a collection?
+A: A group of MongoDB documents.
+Q: What is _id?
+A: The unique identifier field of a document.
+Q: What is CRUD?
+A: Create, Read, Update, and Delete.
+Q: Difference between insertOne and insertMany?
+A: One inserts a single document; the other inserts multiple documents.
+Q: Difference between updateOne and updateMany?
+A: One updates one matching document; the other updates all matching documents.
+Q: What does $gt mean?
+A: Greater than.
+Q: What is projection?
+A: Selecting which fields are returned in query results.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 5
+DATA ANALYSIS USING APACHE PIG AND PIG LATIN
+THEORY NOTES
+
+1. AIM
+To understand Apache Pig and use Pig Latin statements to load, inspect, filter, group, transform, sort, aggregate, and store large datasets.
+
+2. WHAT IS APACHE PIG?
+Apache Pig is a high-level platform for analyzing large datasets in the Hadoop ecosystem. It allows users to express data-processing workflows using Pig Latin rather than writing every operation as a low-level Java MapReduce program.
+Pig is particularly associated with data-flow processing: data is loaded, transformed through a sequence of operations, and stored or displayed.
+
+3. WHAT IS PIG LATIN?
+Pig Latin is the data-flow scripting language used by Apache Pig. A Pig Latin script describes a sequence of transformations on relations.
+A relation in Pig is a bag of tuples. A tuple is an ordered set of fields, and a bag is a collection of tuples. A relation may have a schema that describes field names and types.
+
+4. PIG ARCHITECTURE
+A typical Pig execution flow:
+1. User writes Pig Latin statements in a script or Grunt shell.
+2. Parser checks syntax and builds a logical plan.
+3. Logical optimizer improves the plan where possible.
+4. Compiler converts the plan into a physical execution plan and jobs.
+5. The execution engine runs the plan using the selected mode and underlying processing engine.
+Pig can run in local mode for local-file demonstrations or in Hadoop mode to process data stored in HDFS using the configured Hadoop environment. Exact execution details depend on the Pig version and deployment.
+
+5. GRUNT SHELL
+Grunt is Pig's interactive command-line shell. Pig Latin statements can be entered interactively. A script can also be executed from a file.
+Pig local mode works with the local file system. Hadoop mode uses Hadoop configuration and HDFS. The mode should be selected according to the lab setup.
+
+6. DATA TYPES
+Common Pig data types include:
+• int – 32-bit integer.
+• long – 64-bit integer.
+• float – single-precision floating point.
+• double – double-precision floating point.
+• chararray – string.
+• bytearray – raw bytes / default type when schema is not specified.
+Complex types:
+• tuple – ordered set of fields.
+• bag – collection of tuples.
+• map – key-value collection.
+A schema can be declared while loading data so Pig knows field names and types.
+
+7. LOAD AND PIGSTORAGE
+LOAD reads data into a relation.
+PigStorage is a load/store function for delimited text. A delimiter such as comma or tab can be specified.
+A declared schema should match the actual file's column order and content. If a CSV file has a header row, the header may need to be handled separately depending on the Pig version and loader used. A simple PigStorage load does not automatically guarantee robust handling of every CSV quoting rule.
+
+8. BASIC PIG LATIN OPERATORS
+• LOAD: read data into a relation.
+• DUMP: execute and display a relation on the console.
+• STORE: execute and write a relation to a file system.
+• DESCRIBE: display a relation's schema.
+• ILLUSTRATE: show a sample of how data flows through statements.
+• FILTER: retain tuples satisfying a condition.
+• FOREACH ... GENERATE: project fields or calculate expressions for each tuple.
+• GROUP: group tuples by a key, producing a group field and a bag of records.
+• COGROUP: group two or more relations by matching keys.
+• JOIN: combine relations based on matching fields.
+• DISTINCT: remove duplicate tuples.
+• ORDER: sort a relation.
+• LIMIT: restrict the number of tuples.
+• UNION: combine compatible relations.
+• SPLIT: divide a relation into multiple relations based on conditions.
+
+9. FILTER
+FILTER selects only tuples that satisfy a condition.
+Example concept: retain agriculture records where production is greater than a specified threshold.
+FILTER does not change the fields in each retained tuple; it selects rows.
+
+10. FOREACH AND GENERATE
+FOREACH processes each tuple in a relation. GENERATE specifies the fields or expressions to produce in the output relation.
+It is used for selecting columns, renaming fields, and computing values.
+
+11. GROUP
+GROUP collects tuples with the same key into groups.
+After grouping, Pig provides:
+• group – the grouping key.
+• a bag named after the original relation – the tuples belonging to that key.
+GROUP is useful for state-wise counts, totals, and averages.
+
+12. AGGREGATE FUNCTIONS
+Common aggregate functions include:
+• COUNT(bag) – count tuples in a bag.
+• SUM(expression) – sum numeric values.
+• AVG(expression) – average numeric values.
+• MIN(expression) – minimum value.
+• MAX(expression) – maximum value.
+Aggregations are often performed after GROUP because each group has a bag of related records.
+
+13. ORDER AND LIMIT
+ORDER sorts tuples by one or more fields. ASC means ascending and DESC means descending.
+LIMIT returns at most the specified number of tuples. ORDER followed by LIMIT can be used to obtain a top-N result.
+For grouped top-N analysis, each group's bag may need to be sorted and limited separately.
+
+14. STORE VS DUMP
+DUMP displays a relation's result on the console and forces execution of the relation.
+STORE writes the result to a specified location. In Hadoop mode, the destination is typically in HDFS; in local mode, it is local storage.
+A STORE output directory normally must not already exist.
+
+15. DATASET SCHEMA AND DATA QUALITY
+Before writing analysis statements, identify the dataset's real column names, order, delimiter, and data types. A schema that does not match the CSV can cause incorrect results or conversion errors.
+For example, an agriculture dataset may include state, district, year, season, crop, area, and production. An order dataset may contain order ID, state, and amount. These are examples only; the actual journal dataset schema must be followed.
+Null or malformed numeric values should be considered before applying SUM or AVG.
+
+16. ADVANTAGES
+• Easier to write than low-level MapReduce for many data-flow tasks.
+• Provides built-in relational-style operators.
+• Useful for ETL (extract, transform, load) pipelines.
+• Supports grouping, filtering, sorting, and aggregation.
+• Can process large datasets in the Hadoop ecosystem.
+
+17. LIMITATIONS
+• Pig is a legacy Hadoop ecosystem technology and may not be installed in modern environments.
+• It is not intended as a general-purpose replacement for every database or programming language.
+• Performance depends on execution plans, data layout, and cluster configuration.
+• CSV parsing and schema errors can affect results.
+• Debugging complex scripts may be difficult.
+
+18. PIG VS MAPREDUCE
+Pig Latin expresses data transformations using high-level operators. MapReduce requires the programmer to implement mapper/reducer logic and job configuration. Pig can translate data-flow statements into execution jobs, reducing the amount of low-level code a user writes.
+
+19. APPLICATIONS
+ETL, log processing, cleaning and transforming raw data, summarizing sales or agriculture records, and preparing datasets for further analysis.
+
+20. IMPORTANT VIVA QUESTIONS
+Q: What is Apache Pig?
+A: A high-level platform for analyzing large datasets in the Hadoop ecosystem.
+Q: What is Pig Latin?
+A: Pig's data-flow scripting language.
+Q: What is Grunt?
+A: Pig's interactive shell.
+Q: What does LOAD do?
+A: Reads data into a Pig relation.
+Q: Difference between DUMP and STORE?
+A: DUMP displays output; STORE saves it.
+Q: What does GROUP do?
+A: Groups tuples that have the same key.
+Q: What is FOREACH GENERATE?
+A: It processes each tuple and specifies output fields or expressions.
+Q: What does PigStorage do?
+A: Reads or writes delimited data.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 6
+IMPLEMENTATION OF BLOOM FILTER FOR A REAL-WORLD APPLICATION
+THEORY NOTES
+
+1. AIM
+To understand and implement a Bloom Filter, a probabilistic data structure used for memory-efficient membership testing, such as checking whether a student ID may have been registered.
+
+2. WHAT IS A BLOOM FILTER?
+A Bloom Filter is a space-efficient probabilistic data structure that answers the question: "Is this element possibly in the set, or is it definitely not in the set?"
+It uses a bit array and multiple hash functions. It does not store the original elements in the standard form of the data structure.
+
+3. TWO POSSIBLE ANSWERS
+• Definitely not present: At least one bit position calculated for the item is 0. The item could not have been inserted into this Bloom Filter (assuming no deletion or corruption).
+• Possibly present: All calculated bit positions are 1. The item may have been inserted, but those bits may have been set by other items.
+Therefore, a Bloom Filter can produce false positives but a correctly used standard Bloom Filter does not produce false negatives.
+
+4. BIT ARRAY
+A bit array is an array of bits, each of which can contain 0 or 1.
+Initially all positions are 0.
+When an element is inserted, the hash functions calculate positions in the bit array and those positions are changed to 1.
+Different elements can set overlapping positions.
+
+5. HASH FUNCTIONS
+A hash function converts an input value into a numerical hash. The hash is mapped to an array position, usually using modulo the bit-array size.
+A Bloom Filter uses multiple hash positions for each item. A practical implementation may derive several positions from two independent hash digests using double hashing.
+Hash functions should distribute values well to reduce unnecessary collisions.
+
+6. INSERTION PROCESS
+To insert an element:
+1. Convert the item into a consistent byte/string representation.
+2. Apply the hash calculations.
+3. Map the hash values to valid bit-array indexes.
+4. Set every calculated bit to 1.
+Insertion never resets a bit to 0 in the standard Bloom Filter.
+
+7. MEMBERSHIP CHECK PROCESS
+To check an element:
+1. Calculate the same hash positions used during insertion.
+2. Inspect all corresponding bits.
+3. If any bit is 0, return "definitely not present".
+4. If every bit is 1, return "possibly present".
+A positive result should be verified against the original database when exact confirmation is required.
+
+8. FALSE POSITIVE
+A false positive occurs when an item that was never inserted is reported as possibly present because all of its bit positions have already been set by other items.
+The false-positive probability depends mainly on:
+• Number of inserted items (n).
+• Number of bits in the array (m).
+• Number of hash functions (k).
+• Quality and distribution of hash functions.
+
+9. FALSE NEGATIVE
+A false negative would mean an inserted item is reported as absent. A standard Bloom Filter does not produce false negatives when insertion and checking use the same hash logic and the bit array is not incorrectly modified. Variants that support deletion require additional care.
+
+10. IMPORTANT FORMULAS
+Approximate optimal bit-array size:
+m = -(n * ln(p)) / (ln(2))^2
+where:
+m = number of bits,
+n = expected number of inserted elements,
+p = desired false-positive probability.
+Approximate optimal number of hash functions:
+k = (m/n) * ln(2)
+where k is the number of hash functions.
+The formulas help choose memory size and hash count for an expected capacity and error rate.
+If the actual number of inserted items greatly exceeds the expected capacity, the false-positive rate increases.
+
+11. REAL-WORLD APPLICATION: STUDENT REGISTRATION CHECKER
+A college may use a Bloom Filter as a quick preliminary test for student IDs.
+• When a student registers, the ID is inserted into the Bloom Filter.
+• When an ID is checked, a negative result means the ID is definitely not in the registered set.
+• A positive result means the ID may be registered and should be checked in the actual student database.
+The Bloom Filter should not be treated as the authoritative registration record because false positives are possible.
+
+12. ADVANTAGES
+• Very memory-efficient compared with storing a full set of values.
+• Fast insertion.
+• Fast membership checking.
+• Useful as a preliminary filter before expensive database lookups.
+• Can be useful for large sets where exact membership storage is costly.
+
+13. LIMITATIONS
+• False positives are possible.
+• Standard Bloom Filters do not support safe individual deletion.
+• It does not store the original items.
+• The false-positive rate increases when too many elements are inserted.
+• It cannot tell how many times an item was inserted.
+• A positive answer must be verified if exact correctness matters.
+
+14. BLOOM FILTER VS HASH SET / HASH MAP
+A hash set stores keys and can answer exact membership queries, subject to normal implementation assumptions. A Bloom Filter stores only bit information and uses much less memory, but can return false positives. A hash map stores key-value associations; a standard Bloom Filter does not store associated values.
+
+15. VARIANTS
+• Counting Bloom Filter: Uses counters instead of single bits and can support deletion with appropriate counter handling.
+• Scalable Bloom Filter: Can grow as more elements are added while managing false-positive probability.
+• Cuckoo Filter: An alternative probabilistic membership structure that can support deletion.
+
+16. APPLICATIONS
+Database query optimization, cache filtering, web crawlers, duplicate detection, network systems, distributed storage, and checking whether an item may exist before performing a more expensive lookup.
+
+17. IMPORTANT VIVA QUESTIONS
+Q: What is a Bloom Filter?
+A: A space-efficient probabilistic structure for membership testing.
+Q: What does a bit array contain?
+A: Bits with values 0 or 1.
+Q: What is a false positive?
+A: An absent item is reported as possibly present.
+Q: Can a standard Bloom Filter have false negatives?
+A: Not under correct insertion/checking without deletion or corruption.
+Q: Does it store actual elements?
+A: No, it stores bit positions.
+Q: What happens if any checked bit is zero?
+A: The item is definitely not present.
+Q: What happens if all checked bits are one?
+A: The item is possibly present.
+Q: Why use multiple hash functions?
+A: To calculate multiple bit positions for each element and control false-positive behavior.
+
+
+==============================================================================
+
+
+BDA PRACTICAL – EXPERIMENT 7
+DATA ANALYSIS AND VISUALIZATION USING R
+THEORY NOTES
+
+1. AIM
+To understand the R programming language and use it to inspect, summarize, analyze, and visualize a student academic-performance dataset.
+
+2. WHAT IS DATA ANALYSIS?
+Data analysis is the process of examining, cleaning, transforming, summarizing, and interpreting data to obtain useful information and support decisions.
+Typical stages include:
+• Understanding the problem and dataset.
+• Inspecting rows, columns, and data types.
+• Checking missing or invalid values.
+• Computing descriptive statistics.
+• Exploring relationships between variables.
+• Visualizing patterns.
+• Interpreting and communicating findings.
+
+3. WHAT IS R?
+R is a programming language and software environment for statistical computing, data analysis, and graphics. It provides built-in statistical functions and a large collection of packages for data manipulation, modeling, and visualization.
+
+4. WHAT IS RSTUDIO?
+RStudio is an integrated development environment (IDE) commonly used to work with R. It provides a source editor, console, environment/history pane, and plots/files/packages/help panes.
+R is the language/runtime. RStudio is an application that makes writing and managing R work convenient. Installing R is normally required before using RStudio Desktop.
+
+5. RSTUDIO INTERFACE
+• Source Editor: Write and save R scripts.
+• Console: Execute R commands and view results.
+• Environment: View objects such as variables and data frames.
+• History: Review previously executed commands.
+• Files: Browse files in the working directory.
+• Plots: View generated charts.
+• Packages: Install and manage packages.
+• Help: Read function documentation.
+
+6. DATA FRAME
+A data frame is a two-dimensional tabular structure in R. Each column can have a different data type, but all columns have the same number of rows.
+For a student dataset, columns may include Student_ID, Gender, Study_Hours, Attendance, Assignment_Score, Internal_Marks, and Final_Marks.
+A data frame is commonly created with data.frame().
+
+7. INSPECTING DATA
+• print(data): displays an object.
+• head(data): shows the first rows.
+• tail(data): shows the last rows.
+• str(data): displays the structure, column names, and data types.
+• summary(data): gives summary statistics for each column.
+• dim(data): returns number of rows and columns.
+• names(data): returns column names.
+• nrow(data): returns number of rows.
+• ncol(data): returns number of columns.
+Inspection helps identify incorrect data types, unexpected values, and missing information before analysis.
+
+8. ACCESSING COLUMNS
+The dollar operator accesses a column by name.
+Example concept: student_data$Final_Marks returns the Final_Marks column.
+A column can also be accessed by square-bracket indexing. Correct column names and spelling are important.
+
+9. DESCRIPTIVE STATISTICS
+Descriptive statistics summarize the main features of data.
+• Mean: arithmetic average; sum of observations divided by number of observations.
+• Median: middle value after sorting. For an even number of observations, it is commonly the average of the two middle values.
+• Minimum: smallest observed value.
+• Maximum: largest observed value.
+• Range: maximum minus minimum.
+• Variance: average squared deviation from the mean, with the exact denominator depending on the sample/population convention.
+• Standard deviation: square root of variance; describes spread around the mean.
+R functions include mean(), median(), min(), max(), range(), var(), and sd().
+By default, many of these functions return NA when missing values are present unless na.rm = TRUE is supplied.
+
+10. FREQUENCY TABLE
+table() counts occurrences of values in a categorical variable.
+For example, table(student_data$Gender) can count the number of students in each gender category.
+Frequency tables are useful before creating bar charts or pie charts.
+
+11. DATA VISUALIZATION
+Data visualization represents data graphically so that patterns, comparisons, distributions, and relationships can be understood more easily.
+A good graph should have a clear title, meaningful axis labels, appropriate scales, and a chart type suited to the data.
+
+12. BAR CHART
+A bar chart compares values across categories. The bars are separated to show distinct categories.
+Example: number of students in each gender category.
+In base R, barplot() creates a bar chart. It is often supplied with a frequency table or summary values.
+Use it for categorical comparisons, not as the default way to show a continuous distribution.
+
+13. HISTOGRAM
+A histogram displays the frequency distribution of a numerical variable. It divides the numeric range into intervals called bins or breaks and shows how many observations fall in each interval.
+In base R, hist() creates a histogram.
+The shape can help identify concentration, spread, skewness, gaps, or possible outliers. The appearance depends on the selected bin widths.
+
+14. SCATTER PLOT
+A scatter plot displays paired observations for two numerical variables. Each point represents one observation.
+In base R, plot(x, y) can create a scatter plot.
+It can help identify positive association, negative association, no obvious association, clusters, and outliers. A visible association does not by itself prove causation.
+
+15. PIE CHART
+A pie chart displays categories as slices of a circle, where slice size represents each category's share of the total.
+In base R, pie() creates a pie chart.
+Pie charts are most readable when there are only a small number of categories. Bar charts are often easier for precise comparisons.
+
+16. STUDENT PERFORMANCE ANALYSIS
+A student performance dataset can be explored by:
+• Calculating the mean and median of final marks.
+• Measuring the spread of final marks using standard deviation.
+• Counting students by category.
+• Plotting study hours against final marks.
+• Examining attendance and assignment scores.
+A scatter plot can suggest whether study hours and marks move together, but the dataset alone does not establish that study hours caused the marks.
+
+17. MISSING VALUES AND DATA QUALITY
+R represents missing values using NA.
+Use is.na() to identify missing values. Use sum(is.na(data)) to count missing cells.
+Functions such as mean() can use na.rm = TRUE to ignore missing values, but missingness should be investigated rather than automatically ignored.
+Check for impossible values, inconsistent category labels, duplicates, and incorrect numeric/text types.
+
+18. ADVANTAGES OF R
+• Free and open source.
+• Strong statistical and visualization capabilities.
+• Large package ecosystem.
+• Suitable for exploratory data analysis and research.
+• Works across major operating systems.
+• Supports reproducible scripts and reports.
+
+19. LIMITATIONS / CONSIDERATIONS
+• Some tasks require learning R syntax and package conventions.
+• Very large in-memory datasets may require specialized tools or approaches.
+• Different packages may use different syntax and defaults.
+• Results must be interpreted carefully; charts and statistics do not automatically establish causation.
+
+20. IMPORTANT VIVA QUESTIONS
+Q: What is R?
+A: A language and environment for statistical computing, data analysis, and graphics.
+Q: What is RStudio?
+A: An IDE used to work with R.
+Q: What is a data frame?
+A: A two-dimensional tabular data structure in R.
+Q: What does str() do?
+A: Displays the structure and data types of an object.
+Q: What does summary() do?
+A: Provides summary statistics for an object.
+Q: What is mean?
+A: The arithmetic average.
+Q: What is median?
+A: The middle value of ordered observations.
+Q: What does standard deviation measure?
+A: The spread of values around the mean.
+Q: Difference between bar chart and histogram?
+A: Bar chart compares categories; histogram shows the distribution of numerical values.
+Q: What is a scatter plot used for?
+A: Exploring the relationship between two numerical variables.
+Q: What does table() do?
+A: Counts frequencies of categorical values.
+
+
+==============================================================================

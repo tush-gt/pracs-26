@@ -1,0 +1,16 @@
+Student_ID,Gender,Study_Hours,Attendance,Assignment_Score,Internal_Marks,Final_Marks
+1,Male,2,72,65,60,62
+2,Female,4,85,78,82,84
+3,Male,3,80,72,70,73
+4,Female,5,92,88,90,91
+5,Male,1,65,55,52,50
+6,Female,3,78,75,73,76
+7,Male,4,88,82,80,83
+8,Female,2,70,68,64,65
+9,Male,5,95,91,92,94
+10,Female,4,86,85,84,86
+11,Male,3,76,70,68,71
+12,Female,5,94,90,91,93
+13,Male,2,68,60,58,59
+14,Female,3,82,77,75,78
+15,Male,4,89,84,81,85
